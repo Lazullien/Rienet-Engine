@@ -12,6 +12,7 @@ namespace Rienet
         //Origin Pos (bottom-west)
         public Vector2 origin;
         public Vector2 size;
+        public Vector2 VisibleSize;
         public Scene Scene;
         readonly GamePanel gp;
         readonly WorldBody world;
@@ -32,12 +33,18 @@ namespace Rienet
             //ChangeScene(0);
         }
 
+        public void Resize(float W, float H)
+        {
+            size = new Vector2(W, H);
+        }
+
         //fix camera snapping when nearing end of Scene
         public void Update(Vector2 playerPosition, Vector2 playerSize)
         {
+            VisibleSize = new((float)GamePanel.Width / GamePanel.TileSize, (float)GamePanel.Height / GamePanel.TileSize);
             Vector2 LastPos = pos;
 
-            float XMin = (size.X / 2) + (playerSize.X / 2), XMax = Scene.W - (size.X / 2) + (playerSize.X / 2), YMin = (size.Y / 2) + (playerSize.Y / 2), YMax = Scene.H - (size.Y / 2) + (playerSize.Y / 2);
+            float XMin = VisibleSize.X / 2, XMax = Scene.W - (VisibleSize.X / 2), YMin = VisibleSize.Y / 2, YMax = Scene.H - (VisibleSize.Y / 2);
             bool GreaterX = playerPosition.X + (playerSize.X / 2) > XMin, MinorX = playerPosition.X + (playerSize.X / 2) < XMax, GreaterY = playerPosition.Y + (playerSize.Y / 2) > YMin, MinorY = playerPosition.Y + (playerSize.Y / 2) < YMax;
             // Follow the player in the axis where the Scene didn't end.
             if (GreaterX && MinorX)
@@ -74,13 +81,13 @@ namespace Rienet
             //BasicRenderingAlgorithms.DrawTile(new Tile(gp), gp.pl.pos, spriteBatch, gp);
             foreach (PhysicsBody body in Scene.BodiesInScene)
             {
-                Vector2 DrawPos = BasicRenderingAlgorithms.ToScreenPos(body.pos, pos, Scene, gp);
+                Vector2 DrawPos = BasicRenderingAlgorithms.ToScreenPos(body.pos, pos);
                 body.Draw((int)DrawPos.X, (int)DrawPos.Y, spriteBatch, blankRect);
             }
 
             foreach(Entity e in Scene.EntitiesInScene)
             {
-                BasicRenderingAlgorithms.DrawEntity(e, pos, spriteBatch, gp);
+                e.Draw(pos, spriteBatch, gp);//BasicRenderingAlgorithms.DrawEntity(e, pos, spriteBatch, gp);
             }
 
             foreach (Hitbox b in Scene.hitboxestodraw)
