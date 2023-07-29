@@ -5,6 +5,26 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Rienet
 {
+    public class SkeletalAnimatedSheet
+    {
+
+    }
+
+    public class Skin
+    {
+
+    }
+
+    public class Skeleton
+    {
+
+    }
+
+    public class Bone
+    {
+
+    }
+
     public class AnimatedSheet : SpriteSheet
     {
         //each individual animation is organized horizontally
@@ -23,12 +43,13 @@ namespace Rienet
         public Dictionary<int, Animation> Animations;
 
         //vertical position in spritesheet
-        public int AnimationID { get; private set; }
+        public int AnimationID;
 
         public AnimatedSheet(Vector2 Pos, Vector2 Size, Texture2D Texture, int SplitX, int SplitY, bool Animating, bool Looping) : base(Pos, Size, Texture, SplitX, SplitY)
         {
             this.Animating = Animating;
             this.Looping = Looping;
+            Animations = new();
         }
 
         public void AddAnimation(int Key, Animation Value)
@@ -37,8 +58,16 @@ namespace Rienet
                 Animations.Add(Key, Value);
         }
 
+        public void SetAnimation(int ID)
+        {
+            if (Animations.ContainsKey(ID))
+                CurrentAnimation = Animations[ID];
+        }
+
         public override void Update()
         {
+            CurrentAnimation = Animations[AnimationID];
+
             if (Animating && CurrentAnimation.Delay > 0)
             {
                 //update timer
@@ -94,6 +123,7 @@ namespace Rienet
         {
             this.SplitX = SplitX;
             this.SplitY = SplitY;
+            ShownSize = new Vector2(SplitX, SplitY);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -113,11 +143,11 @@ namespace Rienet
     {
         public Texture2D Texture;
 
-        public Image(Vector2 Pos, Vector2 Size, Texture2D Texture) : base(Pos, Size)
+        public Image(Vector2 Pos, Vector2 RawSize, Texture2D Texture) : base(Pos, RawSize)
         {
             this.Texture = Texture;
-            if (Size != Vector2.Zero)
-                this.Size = new Vector2(Texture.Width, Texture.Height);
+            if (RawSize != Vector2.Zero)
+                this.RawSize = new Vector2(Texture.Width, Texture.Height);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -130,18 +160,20 @@ namespace Rienet
     {
         public static Texture2D BlankRect = new(GamePanel.Instance.GraphicsDevice, 1, 1);
         public Vector2 Pos;
-        public Vector2 Size;
+        public Vector2 RawSize;
+        public Vector2 ShownSize;
         public Vector2 Scale = new(GamePanel.TileSize / GamePanel.PixelsInTile);
         public float Rotation;
         public Color Tint = Color.White;
         public SpriteEffects Effects = SpriteEffects.None;
         public int Depth = 0;
 
-        protected GraphicsComponent(Vector2 Pos, Vector2 Size)
+        protected GraphicsComponent(Vector2 Pos, Vector2 RawSize)
         {
             //position and size are in screen pixel units
             this.Pos = Pos;
-            this.Size = Size;
+            this.RawSize = RawSize;
+            ShownSize = RawSize;
         }
 
         public virtual void Update()
@@ -167,14 +199,26 @@ namespace Rienet
 
         public float Width
         {
-            get { return Size.X; }
-            set { Size.X = value; }
+            get { return RawSize.X; }
+            set { RawSize.X = value; }
         }
 
         public float Height
         {
-            get { return Size.Y; }
-            set { Size.Y = value; }
+            get { return RawSize.Y; }
+            set { RawSize.Y = value; }
+        }
+
+        public float ShownWidth
+        {
+            get { return ShownSize.X; }
+            set { ShownSize.X = value; }
+        }
+
+        public float ShownHeight
+        {
+            get { return ShownSize.Y; }
+            set { ShownSize.Y = value; }
         }
     }
 
@@ -184,5 +228,19 @@ namespace Rienet
         public int[] Frames;
         public float Delay;
         public bool Loop;
+
+        public Animation(int FrameCount, float Delay, bool Loop)
+        {
+            Frames = new int[FrameCount];
+            this.Delay = Delay;
+            this.Loop = Loop;
+        }
+
+        public Animation(int[] Frames, float Delay, bool Loop)
+        {
+            this.Frames = Frames;
+            this.Delay = Delay;
+            this.Loop = Loop;
+        }
     }
 }

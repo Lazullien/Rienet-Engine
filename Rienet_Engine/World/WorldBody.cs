@@ -37,10 +37,5 @@ namespace Rienet
                 return false;
             }
         }
-
-        public void GetHitboxChunkInfo()
-        {
-
-        }
     }
 }

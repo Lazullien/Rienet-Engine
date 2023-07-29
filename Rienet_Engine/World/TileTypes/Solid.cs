@@ -13,6 +13,7 @@ namespace Rienet
             //add to Scene
             DrawBox = new Vector2(1, 1); //default
             friction = 0.05f;
+            SetDrawPosInWorld(new(X, Y + DrawBox.Y));
         }
     }
 }

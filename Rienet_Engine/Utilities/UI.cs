@@ -18,7 +18,7 @@ namespace Rienet
         public GUI(GamePanel game, bool UpdateFirst)
         {
             this.game = game;
-            game.uiHandler.AddUI(this, UpdateFirst);
+            GamePanel.uiHandler.AddUI(this, UpdateFirst);
         }
 
         public virtual void Update(GamePanel game)

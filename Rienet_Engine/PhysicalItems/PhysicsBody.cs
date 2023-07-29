@@ -49,7 +49,6 @@ namespace Rienet
         public void Pre_Update()
         {
             Velocity = Vector2.Zero;
-            VelocityIgnoringFriction = Vector2.Zero;
             TotalFriction = Vector2.Zero;
         }
 
@@ -58,14 +57,16 @@ namespace Rienet
             RemoveFromHitboxChunk();
 
             CollisionNormal.Clear();
-            //move in opposite to velocity based on friction
+
             Velocity += VelocityForced;
             Velocity += VelocityIgnoringFriction;
+
+            VelocityIgnoringFriction = Vector2.Zero;
 
             foreach (Hitbox b in hitbox)
             {
                 b.SetVelocity(Velocity.X, Velocity.Y);
-                b.SetPos(pos.X + b.DX, pos.Y + b.DY);
+                b.SetPos(X + b.DX, Y + b.DY);
             }
 
             Kinetics.VectorToMovement(this);
@@ -74,7 +75,7 @@ namespace Rienet
             VelocityForced = Kinetics.ImplementFriction(VelocityForced, TotalFriction);
 
             //set pos to pixel
-            PixelPos = pos - new Vector2(pos.X % WorldBody.PXSize, pos.Y % WorldBody.PXSize);
+            PixelPos = pos - new Vector2(X % WorldBody.PXSize, Y % WorldBody.PXSize);
 
             MainForcePoint = pos + (size / 2);
 
@@ -108,9 +109,9 @@ namespace Rienet
 
         public void RemoveFromHitboxChunk()
         {
-            for (int x = (int)pos.X; x < size.X + pos.X; x += HitboxChunk.W)
+            for (int x = (int)X; x < Width + X; x += HitboxChunk.W)
             {
-                for (int y = (int)pos.Y; y < size.Y + pos.Y; y += HitboxChunk.H)
+                for (int y = (int)Y; y < Height + Y; y += HitboxChunk.H)
                 {
                     bool ChunkExists = BelongedScene.TryGetHitboxChunk(x, y, out HitboxChunk chunk);
                     if (ChunkExists)
@@ -124,8 +125,51 @@ namespace Rienet
             foreach (Hitbox b in hitbox)
             {
                 b.SetVelocity(Velocity.X, Velocity.Y);
-                b.SetPos(pos.X + b.DX, pos.Y + b.DY);
             }
+        }
+
+        public void UpdateHitboxPosition()
+        {
+            foreach (Hitbox b in hitbox)
+            {
+                b.SetPos(X + b.DX, Y + b.DY);
+            }
+        }
+
+        public float X
+        {
+            get { return pos.X; }
+            set { pos.X = value; }
+        }
+
+        public float Y
+        {
+            get { return pos.Y; }
+            set { pos.Y = value; }
+        }
+
+        public float FX
+        {
+            get { return MainForcePoint.X; }
+            set { MainForcePoint.X = value; }
+        }
+
+        public float FY
+        {
+            get { return MainForcePoint.Y; }
+            set { MainForcePoint.Y = value; }
+        }
+
+        public float Width
+        {
+            get { return size.X; }
+            set { size.X = value; }
+        }
+
+        public float Height
+        {
+            get { return size.Y; }
+            set { size.Y = value; }
         }
     }
 }

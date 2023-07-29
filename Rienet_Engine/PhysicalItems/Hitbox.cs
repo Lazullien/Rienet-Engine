@@ -7,7 +7,7 @@ namespace Rienet
 
         public Hitbox(float X, float Y, float W, float H, float VX, float VY, PhysicsBody belongedBody)
         {
-            this.X = X; this.Y = Y; this.W = W; this.H = H; this.VX = VX; this.VY = VY; this.belongedBody = belongedBody; DX = X - belongedBody.pos.X; DY = Y - belongedBody.pos.Y;
+            this.X = X; this.Y = Y; this.W = W; this.H = H; this.VX = VX; this.VY = VY; this.belongedBody = belongedBody; DX = X - belongedBody.X; DY = Y - belongedBody.Y;
         }
 
         public Hitbox(float X, float Y, float W, float H, float VX, float VY)
@@ -26,7 +26,7 @@ namespace Rienet
 
         public void SetBelongedBody(PhysicsBody belongedBody)
         {
-            this.belongedBody = belongedBody; DX = X - belongedBody.pos.X; DY = Y - belongedBody.pos.Y;
+            this.belongedBody = belongedBody; DX = X - belongedBody.X; DY = Y - belongedBody.Y;
         }
 
         public void SetVelocity(float VX, float VY)
@@ -52,7 +52,7 @@ namespace Rienet
 
         public CircularHitbox(float X, float Y, float Radius, float VX, float VY, PhysicsBody belongedBody)
         {
-            this.X = X; this.Y = Y; this.Radius = Radius; this.VX = VX; this.VY = VY; this.belongedBody = belongedBody; DX = X - belongedBody.pos.X; DY = Y - belongedBody.pos.Y;
+            this.X = X; this.Y = Y; this.Radius = Radius; this.VX = VX; this.VY = VY; this.belongedBody = belongedBody; DX = X - belongedBody.X; DY = Y - belongedBody.Y;
         }
 
         public CircularHitbox(float X, float Y, float Radius, float VX, float VY)

@@ -9,8 +9,8 @@ namespace Rienet
 {
     public class Entity : IBodyVenue
     {
-        public const ulong IFrameTime = 40;
-        public const ulong KnockbackGap = 10;
+        public const float IFrameTime = 1;
+        public const float KnockbackGap = 1f / 16;
 
         public Vector2 Spawnpoint;
         public Vector2 pos;
@@ -18,18 +18,20 @@ namespace Rienet
         public Vector2 SelfVelocity;
         public Vector2 Move;
         public float Speed;
+        public bool Gravitational = true;
         public PhysicsBody body;
-        public IMoveset CurrentMoveSet;
+        public Moveset CurrentMoveSet;
         public Vector2 BodyTextureDifference;
         public Texture2D current;
         public int id;
         protected GamePanel game;
         public Scene BelongedScene;
         public bool InTransition;
+        public GraphicsComponent Graphics;
 
         public float Health;
         public float MaxHealth, MinHealth;
-        public ulong LastDamageTime, LastKnockbackTime;
+        public float TimeSinceDamage, TimeSinceKnockback;
 
         public Entity(GamePanel game, Scene Scene)
         {
@@ -49,7 +51,7 @@ namespace Rienet
         {
             pos = p;
             body.pos = pos + BodyTextureDifference;
-            body.PixelPos = body.pos - new Vector2(body.pos.X % WorldBody.PXSize, body.pos.Y % WorldBody.PXSize);
+            body.PixelPos = body.pos - new Vector2(body.X % WorldBody.PXSize, body.Y % WorldBody.PXSize);
         }
 
         public void SetMove(float x, float y)
@@ -64,7 +66,8 @@ namespace Rienet
         public virtual void Update()
         {
             //add gravity
-            body.VelocityForced += WorldBody.Gravity;
+            if (Gravitational)
+                body.VelocityForced += WorldBody.Gravity;
             //add move to velocity
             body.Velocity += Move;
 
@@ -72,25 +75,17 @@ namespace Rienet
             pos = body.PixelPos - BodyTextureDifference;
 
             if (Health <= MinHealth) OnDeath();
+
+            TimeSinceDamage += GamePanel.ElapsedTime;
+            TimeSinceKnockback += GamePanel.ElapsedTime;
         }
 
-        public virtual void OnDamage(float damage, Vector2 Knockback)
+        public virtual void OnDamage(float damage)
         {
-            if (game.Time - LastDamageTime > IFrameTime)
-            {
-                Health -= damage;
-                OnKnockback(Knockback);
-                LastDamageTime = game.Time;
-            }
         }
 
         public virtual void OnKnockback(Vector2 Knockback)
         {
-            if (game.Time - LastKnockbackTime > KnockbackGap)
-            {
-                body.VelocityForced += Knockback;
-                LastKnockbackTime = game.Time;
-            }
         }
 
         public virtual void SelfKineticX(bool west, bool east)
@@ -139,6 +134,16 @@ namespace Rienet
             Move.Y = SelfVelocity.Y * Speed;
         }
 
+        public virtual void Draw(Vector2 CenterPos, SpriteBatch spriteBatch, GamePanel gamePanel)
+        {
+            if (Graphics is SpriteSheet spriteSheet)
+                BasicRenderingAlgorithms.DrawSpriteInSheet(spriteSheet, DrawPosInWorld, CenterPos, spriteBatch);
+            else if (Graphics is Image image)
+                BasicRenderingAlgorithms.DrawImage(image, DrawPosInWorld, CenterPos, spriteBatch);
+            else if (Graphics != null)
+                BasicRenderingAlgorithms.DrawComponent(Graphics, DrawPosInWorld, CenterPos, spriteBatch);
+        }
+
         public virtual void OnNonCollidableCollision(PhysicsBody Target, Vector2 Intersection)
         {
         }
@@ -153,6 +158,23 @@ namespace Rienet
 
         public virtual void OnDestruction()
         {
+        }
+
+        public float X
+        {
+            get { return pos.X; }
+            set { pos.X = value; }
+        }
+
+        public float Y
+        {
+            get { return pos.Y; }
+            set { pos.Y = value; }
+        }
+
+        public Vector2 DrawPosInWorld
+        {
+            get { return new Vector2(X, Y + DrawBox.Y); }
         }
     }
 }

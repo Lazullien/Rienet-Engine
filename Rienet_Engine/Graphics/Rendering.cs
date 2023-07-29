@@ -9,57 +9,81 @@ namespace Rienet
 {
     public static class BasicRenderingAlgorithms
     {
-        public static Vector2 ToScreenPos(Vector2 WorldPos, Vector2 CenterPos, Scene Scene, GamePanel gp)
+        public static Vector2 ToScreenPos(Vector2 WorldPos, Vector2 CenterPos)
         {
             float x = (float)(WorldPos.X - CenterPos.X), y = (float)(WorldPos.Y - CenterPos.Y);
-            x *= gp.TileSize; y *= -gp.TileSize;
-            x += gp.Width / 2;
-            y += gp.Height / 2;
+            x *= GamePanel.TileSize; y *= -GamePanel.TileSize;
+            x += GamePanel.Width / 2;
+            y += GamePanel.Height / 2;
             return new Vector2(x, y);
         }
 
-        public static bool DrawPosInScreen(Vector2 DrawPos, Vector2 DrawBox, GamePanel gp)
+        public static bool DrawPosInScreen(Vector2 DrawPos, Vector2 DrawBox)
         {
-            return DrawPos.X + DrawBox.X * gp.TileSize >= 0 && DrawPos.Y + DrawBox.Y * gp.TileSize >= 0 && DrawPos.X <= gp.Width && DrawPos.Y <= gp.Height;
+            return DrawPos.X + (DrawBox.X * GamePanel.TileSize) >= 0 && DrawPos.Y + (DrawBox.Y * GamePanel.TileSize) >= 0 && DrawPos.X <= GamePanel.Width && DrawPos.Y <= GamePanel.Height;
         }
 
-        //account bodytexdif
-        public static void DrawTile(Tile tile, Vector2 CenterPos, SpriteBatch sb, GamePanel gp)
+        public static void DrawSpriteInSheet(SpriteSheet spriteSheet, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch)
         {
-            Vector2 drawPos = ToScreenPos(new Vector2(tile.pos.X, tile.pos.Y + tile.DrawBox.Y), CenterPos, tile.BelongedScene, gp);
+            Vector2 DrawPos = ToScreenPos(SourcePos, CenterPos);
+            spriteSheet.Pos = DrawPos;
 
-            if (DrawPosInScreen(drawPos, tile.DrawBox, gp))
-            {
-                sb.Draw(Tile.mono, drawPos, null, Color.White, 0, new Vector2(0, 0), new Vector2(gp.TileSize / GamePanel.PixelsInTile, gp.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 0);
-            }
+            if (DrawPosInScreen(DrawPos, spriteSheet.IndividualSize * spriteSheet.Scale))
+                spriteSheet.Draw(spriteBatch);
         }
 
-        public static void DrawEntity(Entity e, Vector2 CenterPos, SpriteBatch sb, GamePanel gp)
+        public static void DrawSpriteInSheet(SpriteSheet spriteSheet, SpriteBatch spriteBatch)
         {
-            Vector2 drawPos = ToScreenPos(new Vector2(e.pos.X, e.pos.Y + e.DrawBox.Y), CenterPos, e.BelongedScene, gp);
+            if (DrawPosInScreen(spriteSheet.Pos, spriteSheet.IndividualSize * spriteSheet.Scale))
+                spriteSheet.Draw(spriteBatch);
+        }
 
-            if (DrawPosInScreen(drawPos, e.DrawBox, gp))
-            {
-                sb.Draw(e.current, drawPos, null, Color.White, 0, new Vector2(0, 0), new Vector2(gp.TileSize / GamePanel.PixelsInTile, gp.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 0);
-            }
+        public static void DrawImage(Image image, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch)
+        {
+            Vector2 DrawPos = ToScreenPos(SourcePos, CenterPos);
+            image.Pos = DrawPos;
+
+            if (DrawPosInScreen(DrawPos, image.ShownSize * image.Scale))
+                image.Draw(spriteBatch);
+        }
+
+        public static void DrawImage(Image image, SpriteBatch spriteBatch)
+        {
+            if (DrawPosInScreen(image.Pos, image.ShownSize * image.Scale))
+                image.Draw(spriteBatch);
+        }
+
+        public static void DrawComponent(GraphicsComponent graphicsComponent, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch)
+        {
+            Vector2 DrawPos = ToScreenPos(SourcePos, CenterPos);
+            graphicsComponent.Pos = DrawPos;
+
+            if (DrawPosInScreen(DrawPos, graphicsComponent.ShownSize * graphicsComponent.Scale))
+                graphicsComponent.Draw(spriteBatch);
+        }
+
+        public static void DrawComponent(GraphicsComponent graphicsComponent, SpriteBatch spriteBatch)
+        {
+            if (DrawPosInScreen(graphicsComponent.Pos, graphicsComponent.ShownSize * graphicsComponent.Scale))
+                graphicsComponent.Draw(spriteBatch);
         }
 
         //fault here
-        public static void DrawHitbox(Hitbox hb, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel gp, Texture2D blankRect)
+        public static void DrawHitbox(Hitbox hb, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel GamePanel, Texture2D blankRect)
         {
-            Vector2 drawPos = ToScreenPos(new Vector2(hb.X, hb.Y + hb.H), CenterPos, BelongedScene, gp);
-            Vector2 size = new Vector2(hb.W, hb.H) * gp.TileSize;
+            Vector2 drawPos = ToScreenPos(new Vector2(hb.X, hb.Y + hb.H), CenterPos);
+            Vector2 size = new Vector2(hb.W, hb.H) * GamePanel.TileSize;
 
-            if (DrawPosInScreen(drawPos, size, gp))
+            if (DrawPosInScreen(drawPos, size))
             {
                 DrawRectangle(sb, new Rectangle((int)drawPos.X, (int)drawPos.Y, (int)size.X, (int)size.Y), Color.Red, 3, blankRect);
             }
         }
 
-        public static void DrawCircularHitbox(CircularHitbox circ, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel gp, Texture2D blankCirc)
+        public static void DrawCircularHitbox(CircularHitbox circ, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel GamePanel, Texture2D blankCirc)
         {
-            Vector2 drawPos = ToScreenPos(new Vector2(circ.X, circ.Y), CenterPos, BelongedScene, gp);
-            float screenRad = circ.Radius * gp.TileSize;
+            Vector2 drawPos = ToScreenPos(new Vector2(circ.X, circ.Y), CenterPos);
+            float screenRad = circ.Radius * GamePanel.TileSize;
 
             DrawCircle(sb, drawPos, screenRad, Color.Red, blankCirc);
         }

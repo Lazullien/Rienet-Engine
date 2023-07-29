@@ -12,7 +12,7 @@ namespace Rienet
         public static void GetCollisionOfDynamicBody(PhysicsBody body, Vector2 path, Scene Scene)
         {
             //make a slighty bigger hitbox for searching
-            float X = body.pos.X, Y = body.pos.Y, W = body.size.X, H = body.size.Y;
+            float X = body.X, Y = body.Y, W = body.Width, H = body.Height;
             float XMin = X, XMax = X + W, YMin = Y, YMax = Y + H;
             Line uw = new(XMin, YMax, XMin + path.X, YMax + path.Y);
             Line ue = new(XMax, YMax, XMax + path.X, YMax + path.Y);
@@ -43,33 +43,33 @@ namespace Rienet
                 : body.hitbox[0] is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, Abody.hitbox[0], out intersection, out Normal, out ContactTime))
                 {
                     Sorter.Add(i, ContactTime);
+                    if (!(Abody.Collidable || body.Collidable))
+                    {
+                        //activate collision behavior without normal
+                        body.OnNonCollidableCollision(Abody, intersection);
+                        Abody.OnNonCollidableCollision(body, intersection);
+                        body.UpdateHitboxVelocity();
+                    }
                 }
                 else
                 {
                     body.OnNoCollision(Abody);
                     Abody.OnNoCollision(body);
+                    body.UpdateHitboxVelocity();
                 }
             }
 
-            //var keys = Collided.Keys.ToList();
-            //keys.Sort();
-            //sort by time in Sorter
-            foreach (var t in Sorter.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value))
+            foreach (var t in Sorter.OrderBy(s => s.Value).ToDictionary(s => s.Key, s => s.Value))
             {
                 PhysicsBody BodyToCheck = BodiesToCheck[t.Key];
 
                 Vector2 intersection = Vector2.Zero, Normal = Vector2.Zero; float ContactTime = 0;
 
-                if ((!(body.hitbox[0] is CircularHitbox)) && !(BodyToCheck.hitbox[0] is CircularHitbox) ? DynamicHitboxIntersectsHitbox(body.hitbox[0], BodyToCheck.hitbox[0], out intersection, out Normal, out ContactTime)
+                if ((body.hitbox[0] is not CircularHitbox) && BodyToCheck.hitbox[0] is not CircularHitbox ? DynamicHitboxIntersectsHitbox(body.hitbox[0], BodyToCheck.hitbox[0], out intersection, out Normal, out ContactTime)
                 : body.hitbox[0] is CircularHitbox a && BodyToCheck.hitbox[0] is CircularHitbox b ? DynamicCircleIntersectsCircle(a, b, out intersection, out Normal, out ContactTime)
-                : (!(body.hitbox[0] is CircularHitbox)) && BodyToCheck.hitbox[0] is CircularHitbox b2 ? DynamicHitboxIntersectsCircle(body.hitbox[0], b2, out intersection, out Normal, out ContactTime)
+                : (body.hitbox[0] is not CircularHitbox) && BodyToCheck.hitbox[0] is CircularHitbox b2 ? DynamicHitboxIntersectsCircle(body.hitbox[0], b2, out intersection, out Normal, out ContactTime)
                 : body.hitbox[0] is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, BodyToCheck.hitbox[0], out intersection, out Normal, out ContactTime))
                 {
-                    //add body's friction with the pressure (-normal) of collision
-                    //body.TotalFriction
-                    //BodieToCheck.TotalFriction
-
-                    //differentiate situations of collidables
                     if (BodyToCheck.Collidable || body.Collidable)
                     {
                         body.Velocity += Normal * new Vector2(Math.Abs(body.hitbox[0].VX), Math.Abs(body.hitbox[0].VY));
@@ -80,20 +80,20 @@ namespace Rienet
                         body.OnCollision(BodyToCheck, intersection);
                         BodyToCheck.OnCollision(body, intersection);
                     }
-                    else if (!(BodyToCheck.Collidable || body.Collidable))
-                    {
-                        //activate collision behavior without normal
-                        body.OnNonCollidableCollision(BodyToCheck, intersection);
-                        BodyToCheck.OnNonCollidableCollision(body, intersection);
-                    }
+
+                    body.UpdateHitboxVelocity();
 
                     body.BelongedObject?.OnCollision(BodyToCheck);
                     BodyToCheck.BelongedObject?.OnCollision(body);
+
+                    body.UpdateHitboxVelocity();
                 }
                 else
                 {
                     body.OnNoCollision(BodyToCheck);
                     BodyToCheck.OnNoCollision(body);
+
+                    body.UpdateHitboxVelocity();
                 }
             }
         }

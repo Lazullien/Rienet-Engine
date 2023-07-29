@@ -65,7 +65,7 @@ namespace Rienet
             world.Scenes.TryGetValue(ID, out Scene);
         }
 
-        public void ProjectToScreen(SpriteBatch spriteBatch, GraphicsDevice gd)
+        public void ProjectToScreen(SpriteBatch spriteBatch)
         {
             Scene.BG?.Draw(origin, this, spriteBatch);
 
@@ -75,10 +75,11 @@ namespace Rienet
                 for (float y = origin.Y; y < Math.Ceiling(origin.Y + size.Y); y++)
                 {
                     bool tileExists = Scene.GetGridInfo(new Vector2(x, y), out Tile tile);
-                    if (tileExists) BasicRenderingAlgorithms.DrawTile(tile, pos, spriteBatch, gp);
+                    if (tileExists) 
+                        tile.Draw(pos, spriteBatch, gp);
                 }
             }
-            //BasicRenderingAlgorithms.DrawTile(new Tile(gp), gp.pl.pos, spriteBatch, gp);
+
             foreach (PhysicsBody body in Scene.BodiesInScene)
             {
                 Vector2 DrawPos = BasicRenderingAlgorithms.ToScreenPos(body.pos, pos);
@@ -86,9 +87,7 @@ namespace Rienet
             }
 
             foreach(Entity e in Scene.EntitiesInScene)
-            {
-                e.Draw(pos, spriteBatch, gp);//BasicRenderingAlgorithms.DrawEntity(e, pos, spriteBatch, gp);
-            }
+                e.Draw(pos, spriteBatch, gp);
 
             foreach (Hitbox b in Scene.hitboxestodraw)
                 BasicRenderingAlgorithms.DrawHitbox(b, pos, Scene, spriteBatch, gp, blankRect);

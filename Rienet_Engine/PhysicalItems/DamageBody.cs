@@ -23,7 +23,9 @@ namespace Rienet
         {
             //deal damage & knockback
             if(Target != this && Target.BelongedObject is Entity e)
-                e.OnDamage(DamageValue, new Vector2((e.pos.X - pos.X) * Knockback, 0.05f));
+            {
+                e.OnDamage(DamageValue);
+            }
         }
     }
 }

@@ -20,7 +20,8 @@ namespace Rienet
 
         public List<Transition> Transitions;
 
-        public Dictionary<PhysicsBody, ulong> BodiesRequestingUpdate;
+        //the float here refers to time from request time
+        public Dictionary<PhysicsBody, float> BodiesRequestingUpdate;
 
         //temp
         public List<Hitbox> hitboxestodraw = new();
@@ -83,7 +84,7 @@ namespace Rienet
                     //else body.Update();
                 }
 
-                foreach (PhysicsBody body in BodiesRequestingUpdate.Where(kvp => kvp.Value == gp.Time).Select(kvp => kvp.Key))
+                foreach (PhysicsBody body in BodiesRequestingUpdate.Where(kvp => kvp.Value <= GamePanel.Time * GamePanel.ElapsedTime).Select(kvp => kvp.Key))
                 {
                     body?.Update();
                     if (!body.ConstantUpdate)
@@ -136,9 +137,9 @@ namespace Rienet
             }
 
             //min x to max x remove
-            for (int x = (int)body.pos.X; x < body.pos.X + body.size.X; x += HitboxChunk.W)
+            for (int x = (int)body.X; x < body.X + body.Width; x += HitboxChunk.W)
             {
-                for (int y = (int)body.pos.Y; y < body.pos.Y + body.size.Y; y += HitboxChunk.H)
+                for (int y = (int)body.Y; y < body.Y + body.Height; y += HitboxChunk.H)
                 {
                     if (TryGetHitboxChunk(x, y, out HitboxChunk chunk))
                         chunk.RemoveBody(body);
@@ -153,9 +154,9 @@ namespace Rienet
             if (!BodiesInScene.Contains(body))
                 BodiesInScene.Add(body);
             //add in chunks
-            for (int x = (int)body.pos.X; x < body.pos.X + body.size.X; x += HitboxChunk.W)
+            for (int x = (int)body.X; x < body.X + body.Width; x += HitboxChunk.W)
             {
-                for (int y = (int)body.pos.Y; y < body.pos.Y + body.size.Y; y += HitboxChunk.H)
+                for (int y = (int)body.Y; y < body.Y + body.Height; y += HitboxChunk.H)
                 {
                     if (TryGetHitboxChunk(x, y, out HitboxChunk chunk))
                         chunk.AddBody(body);

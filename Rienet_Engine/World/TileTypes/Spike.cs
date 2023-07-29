@@ -12,6 +12,7 @@ namespace Rienet
             body = new DamageBody(4, 0, this, pos, new Vector2(1, 1), hitbox, 0, BelongedScene);
             //add to Scene
             DrawBox = new Vector2(1, 1); //default
+            SetDrawPosInWorld(new(X, Y + DrawBox.Y));
         }
     }
 }

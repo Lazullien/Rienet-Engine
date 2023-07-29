@@ -38,8 +38,8 @@ namespace Rienet
                 //Vector2 DrawposInScene = (l.Size * POV / (4 * SceneSize)) - l.Size + (SceneSize / 2);
                 //get draw pos based on scrollspeed and distance of the pos from the start of the bg
                 DrawposInScene -= new Vector2(DrawposInScene.X % WorldBody.PXSize, DrawposInScene.Y % WorldBody.PXSize);
-                Vector2 Drawpos = BasicRenderingAlgorithms.ToScreenPos(DrawposInScene, Cam.pos, Cam.Scene, gp);
-                spriteBatch.Draw(l.Texture, Drawpos, null, Color.White, 0, Vector2.Zero, new Vector2(gp.TileSize / GamePanel.PixelsInTile, gp.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 1);
+                Vector2 Drawpos = BasicRenderingAlgorithms.ToScreenPos(DrawposInScene, Cam.pos);
+                spriteBatch.Draw(l.Texture, Drawpos, null, Color.White, 0, Vector2.Zero, new Vector2(GamePanel.TileSize / GamePanel.PixelsInTile, GamePanel.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 1);
             }
         }
 
