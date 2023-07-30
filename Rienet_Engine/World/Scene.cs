@@ -17,6 +17,7 @@ namespace Rienet
         public List<PhysicsBody> BodiesInScene;
         public List<Entity> EntitiesInScene; //as a symbol of existance
         public Background BG;
+        public GraphicsComponent Overlay;
 
         public List<Transition> Transitions;
 
@@ -26,13 +27,11 @@ namespace Rienet
         //temp
         public List<Hitbox> hitboxestodraw = new();
         //Transition t = new(new Rectangle(0, 15, 1, 4), this, );
-        GamePanel gp;
 
-        public Scene(int W, int H, GamePanel gp)
+        public Scene(int ID, int W, int H, GraphicsComponent Overlay)
         {
-            //construct a temp world for now, change to json format load later
-            //new Tile(new Vector2(x,y), gp);
-            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this, gp);
+            this.ID = ID;
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
             SceneMap = new Tile[W, H];
             HitboxChunks = new();
@@ -42,17 +41,47 @@ namespace Rienet
             Transitions = new();
 
             BodiesRequestingUpdate = new();
-            this.gp = gp;
+            this.Overlay = Overlay;
             OnCreation();
         }
 
-        public Scene(int ID, int W, int H, GamePanel gp)
+        public Scene(int W, int H, GraphicsComponent Overlay)
         {
-            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this, gp);
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+            HitboxChunks = new();
+            BodiesInScene = new();
+            EntitiesInScene = new();
+
+            Transitions = new();
+
+            BodiesRequestingUpdate = new();
+            this.Overlay = Overlay;
+            OnCreation();
+        }
+
+        public Scene(int ID, int W, int H)
+        {
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.ID = ID;
             this.W = W; this.H = H;
 
-            this.gp = gp;
+            OnCreation();
+        }
+
+        public Scene(int W, int H)
+        {
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+            HitboxChunks = new();
+            BodiesInScene = new();
+            EntitiesInScene = new();
+
+            Transitions = new();
+
+            BodiesRequestingUpdate = new();
             OnCreation();
         }
 

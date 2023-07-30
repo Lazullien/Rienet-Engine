@@ -69,7 +69,7 @@ namespace Rienet
 
             //add objects to scene here
             Tester.LoadTestingObjects(Content);
-            AteloInitializer.BuildWorld(World, this);
+            AteloInitializer.BuildWorld(World);
             cam = new Camera(new Vector2(0, 0), new Vector2(35, 35), World.Scenes[0], World, this);
             pl = new Player(this, World.Scenes[0]);
             Pawn pawn = new Pawn(this, World.Scenes[0], 1, 0.2f);

@@ -9,16 +9,14 @@ namespace Rienet
     public class Background : IGameObject
     {
         readonly Scene Scene;
-        readonly GamePanel gp;
         public List<Layer> layers;
         public Vector2 pos, size;
         public float ScrollSpeed;
 
-        public Background(List<Layer> layers, Scene Scene, GamePanel gp)
+        public Background(List<Layer> layers, Scene Scene)
         {
             this.layers = layers;
             this.Scene = Scene;
-            this.gp = gp;
         }
 
         public void Draw(Vector2 POV, Camera Cam, SpriteBatch spriteBatch)

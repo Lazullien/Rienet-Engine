@@ -18,9 +18,9 @@ namespace Rienet
             return new Vector2(x, y);
         }
 
-        public static bool DrawPosInScreen(Vector2 DrawPos, Vector2 DrawBox)
+        public static bool DrawPosInScreen(Vector2 DrawPos, Vector2 Size)
         {
-            return DrawPos.X + (DrawBox.X * GamePanel.TileSize) >= 0 && DrawPos.Y + (DrawBox.Y * GamePanel.TileSize) >= 0 && DrawPos.X <= GamePanel.Width && DrawPos.Y <= GamePanel.Height;
+            return DrawPos.X + Size.X >= 0 && DrawPos.Y + Size.Y >= 0 && DrawPos.X <= GamePanel.Width && DrawPos.Y <= GamePanel.Height;
         }
 
         public static void DrawSpriteInSheet(SpriteSheet spriteSheet, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch)

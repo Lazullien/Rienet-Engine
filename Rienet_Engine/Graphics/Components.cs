@@ -66,6 +66,8 @@ namespace Rienet
 
         public override void Update()
         {
+            base.Update();
+
             CurrentAnimation = Animations[AnimationID];
 
             if (Animating && CurrentAnimation.Delay > 0)
@@ -126,6 +128,11 @@ namespace Rienet
             ShownSize = new Vector2(SplitX, SplitY);
         }
 
+        public override void Update()
+        {
+            ShownSize = new Vector2(SplitX, SplitY);
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             Rectangle SourceRect = new(IndexX * SplitX, IndexY * SplitY, SplitX, SplitY);
@@ -146,8 +153,9 @@ namespace Rienet
         public Image(Vector2 Pos, Vector2 RawSize, Texture2D Texture) : base(Pos, RawSize)
         {
             this.Texture = Texture;
-            if (RawSize != Vector2.Zero)
+            if (RawSize == Vector2.Zero)
                 this.RawSize = new Vector2(Texture.Width, Texture.Height);
+            ShownSize = this.RawSize;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -178,6 +186,7 @@ namespace Rienet
 
         public virtual void Update()
         {
+            ShownSize = RawSize;
         }
 
         public virtual void Draw(SpriteBatch spriteBatch)

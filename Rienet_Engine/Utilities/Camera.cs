@@ -80,6 +80,8 @@ namespace Rienet
                 }
             }
 
+            //render overlay in scene
+
             foreach (PhysicsBody body in Scene.BodiesInScene)
             {
                 Vector2 DrawPos = BasicRenderingAlgorithms.ToScreenPos(body.pos, pos);
