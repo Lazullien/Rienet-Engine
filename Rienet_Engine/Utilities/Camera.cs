@@ -18,7 +18,6 @@ namespace Rienet
         readonly WorldBody world;
 
         public Texture2D blankRect;
-        public Texture2D blankCirc;
 
         public Camera(Vector2 pos, Vector2 size, Scene StartScene, WorldBody world, GamePanel gp)
         {
@@ -75,12 +74,20 @@ namespace Rienet
                 for (float y = origin.Y; y < Math.Ceiling(origin.Y + size.Y); y++)
                 {
                     bool tileExists = Scene.GetGridInfo(new Vector2(x, y), out Tile tile);
-                    if (tileExists) 
+                    if (tileExists)
                         tile.Draw(pos, spriteBatch, gp);
                 }
             }
 
             //render overlay in scene
+            GraphicsComponent Overlay = Scene.Overlay;
+
+            if (Overlay is SpriteSheet spriteSheet)
+                BasicRenderingAlgorithms.DrawSpriteInSheet(spriteSheet, Vector2.Zero, pos, spriteBatch);
+            else if (Overlay is Image image)
+                BasicRenderingAlgorithms.DrawImage(image, Vector2.Zero, pos, spriteBatch);
+            else if (Overlay != null)
+                BasicRenderingAlgorithms.DrawComponent(Overlay, Vector2.Zero, pos, spriteBatch);
 
             foreach (PhysicsBody body in Scene.BodiesInScene)
             {
@@ -88,15 +95,50 @@ namespace Rienet
                 body.Draw((int)DrawPos.X, (int)DrawPos.Y, spriteBatch, blankRect);
             }
 
-            foreach(Entity e in Scene.EntitiesInScene)
+            foreach (Entity e in Scene.EntitiesInScene)
                 e.Draw(pos, spriteBatch, gp);
 
             foreach (Hitbox b in Scene.hitboxestodraw)
-                BasicRenderingAlgorithms.DrawHitbox(b, pos, Scene, spriteBatch, gp, blankRect);
+                if (b is CircularHitbox c)
+                    BasicRenderingAlgorithms.DrawCircle(spriteBatch, c.pos, c.Radius, pos, Color.Red, gp.GraphicsDevice);
+                else
+                    BasicRenderingAlgorithms.DrawRectangle(spriteBatch, b.pos, b.size, pos, Color.Red, blankRect);
         }
 
-        public void DebugProjection(GraphicsDevice gd)
+        public float X
         {
+            get { return pos.X; }
+            set { pos.X = value; }
+        }
+
+        public float Y
+        {
+            get { return pos.Y; }
+            set { pos.Y = value; }
+        }
+
+        public float OriginX
+        {
+            get { return origin.X; }
+            set { origin.X = value; }
+        }
+
+        public float OriginY
+        {
+            get { return origin.Y; }
+            set { origin.Y = value; }
+        }
+
+        public float Width
+        {
+            get { return size.X; }
+            set { size.X = value; }
+        }
+
+        public float Height
+        {
+            get { return size.Y; }
+            set { size.Y = value; }
         }
     }
 }

@@ -33,29 +33,42 @@ namespace Rienet
             for (int i = 0; i < BodiesToCheck.Count; i++)
             {
                 PhysicsBody Abody = BodiesToCheck[i];
-                //differ intersection algorithm used by situations (sq vs sq / sq vs circ / circ vs circ)
-                Vector2 intersection = Vector2.Zero, Normal = Vector2.Zero;
 
-                //add this to the collided check if it intersects, in the end the bodies who were never processed for collision will call OnNoCollision();
-                if ((body.hitbox[0] is not CircularHitbox) && !(Abody.hitbox[0] is CircularHitbox) ? DynamicHitboxIntersectsHitbox(body.hitbox[0], Abody.hitbox[0], out intersection, out Normal, out float ContactTime)
-                : body.hitbox[0] is CircularHitbox a && Abody.hitbox[0] is CircularHitbox b ? DynamicCircleIntersectsCircle(a, b, out intersection, out Normal, out ContactTime)
-                : (body.hitbox[0] is not CircularHitbox) && Abody.hitbox[0] is CircularHitbox b2 ? DynamicHitboxIntersectsCircle(body.hitbox[0], b2, out intersection, out Normal, out ContactTime)
-                : body.hitbox[0] is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, Abody.hitbox[0], out intersection, out Normal, out ContactTime))
+                foreach (Hitbox bodyHB in body.hitbox)
                 {
-                    Sorter.Add(i, ContactTime);
-                    if (!(Abody.Collidable || body.Collidable))
+                    foreach (Hitbox AbodyHB in Abody.hitbox)
                     {
-                        //activate collision behavior without normal
-                        body.OnNonCollidableCollision(Abody, intersection);
-                        Abody.OnNonCollidableCollision(body, intersection);
-                        body.UpdateHitboxVelocity();
+
+                        //first check for static intersection, DON"T FORGET TO ADD CIRCLES
+                        if (!(Abody.Collidable || body.Collidable) &&
+                        (bodyHB is not CircularHitbox) && AbodyHB is not CircularHitbox ? HitboxIntersectsHitbox(bodyHB, AbodyHB)
+                        : bodyHB is CircularHitbox c && AbodyHB is CircularHitbox d ? CircleIntersectsCircle(c, d)
+                        : (bodyHB is not CircularHitbox) && AbodyHB is CircularHitbox d2 ? HitboxIntersectsCircle(bodyHB, d2)
+                        : bodyHB is CircularHitbox c3 && HitboxIntersectsCircle(AbodyHB, c3))
+                        {
+                            //activate collision behavior without normal
+                            body.OnNonCollidableCollision(Abody, body.pos);
+                            Abody.OnNonCollidableCollision(body, Abody.pos);
+                            body.UpdateHitboxVelocity();
+                        }
+
+                        //differ intersection algorithm used by situations (sq vs sq / sq vs circ / circ vs circ)
+                        Vector2 intersection = Vector2.Zero, Normal = Vector2.Zero;
+
+                        //add this to the collided check if it intersects, in the end the bodies who were never processed for collision will call OnNoCollision();
+                        if ((bodyHB is not CircularHitbox) && AbodyHB is not CircularHitbox ? DynamicHitboxIntersectsHitbox(bodyHB, AbodyHB, out intersection, out Normal, out float ContactTime)
+                        : bodyHB is CircularHitbox a && AbodyHB is CircularHitbox b ? DynamicCircleIntersectsCircle(a, b, out intersection, out Normal, out ContactTime)
+                        : bodyHB is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, AbodyHB, out intersection, out Normal, out ContactTime))
+                        {
+                            Sorter.Add(i, ContactTime);
+                        }
+                        else
+                        {
+                            body.OnNoCollision(Abody);
+                            Abody.OnNoCollision(body);
+                            body.UpdateHitboxVelocity();
+                        }
                     }
-                }
-                else
-                {
-                    body.OnNoCollision(Abody);
-                    Abody.OnNoCollision(body);
-                    body.UpdateHitboxVelocity();
                 }
             }
 
@@ -63,37 +76,44 @@ namespace Rienet
             {
                 PhysicsBody BodyToCheck = BodiesToCheck[t.Key];
 
-                Vector2 intersection = Vector2.Zero, Normal = Vector2.Zero;
-
-                if ((body.hitbox[0] is not CircularHitbox) && BodyToCheck.hitbox[0] is not CircularHitbox ? DynamicHitboxIntersectsHitbox(body.hitbox[0], BodyToCheck.hitbox[0], out intersection, out Normal, out float ContactTime)
-                : body.hitbox[0] is CircularHitbox a && BodyToCheck.hitbox[0] is CircularHitbox b ? DynamicCircleIntersectsCircle(a, b, out intersection, out Normal, out ContactTime)
-                : (body.hitbox[0] is not CircularHitbox) && BodyToCheck.hitbox[0] is CircularHitbox b2 ? DynamicHitboxIntersectsCircle(body.hitbox[0], b2, out intersection, out Normal, out ContactTime)
-                : body.hitbox[0] is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, BodyToCheck.hitbox[0], out intersection, out Normal, out ContactTime))
+                foreach (Hitbox bodyHB in body.hitbox)
                 {
-                    if (BodyToCheck.Collidable || body.Collidable)
+                    foreach (Hitbox BodyToCheckHB in BodyToCheck.hitbox)
                     {
-                        body.Velocity += Normal * new Vector2(Math.Abs(body.hitbox[0].VX), Math.Abs(body.hitbox[0].VY));
-                        body.VelocityForced += Normal * new Vector2(Math.Abs(body.VelocityForced.X), Math.Abs(body.VelocityForced.Y));
-                        body.CollisionNormal.Add(Normal);
-                        body.UpdateHitboxVelocity();
 
-                        body.OnCollision(BodyToCheck, intersection);
-                        BodyToCheck.OnCollision(body, intersection);
+                        Vector2 intersection = Vector2.Zero, Normal = Vector2.Zero;
+
+                        //somewhat reduntant, but hitbox velocities are in fact updated, thus the need for a recheck, try to fix later
+                        if ((bodyHB is not CircularHitbox) && BodyToCheckHB is not CircularHitbox ? DynamicHitboxIntersectsHitbox(bodyHB, BodyToCheckHB, out intersection, out Normal, out float ContactTime)
+                        : bodyHB is CircularHitbox a && BodyToCheckHB is CircularHitbox b ? DynamicCircleIntersectsCircle(a, b, out intersection, out Normal, out ContactTime)
+                        : bodyHB is CircularHitbox a3 && DynamicCircleIntersectsHitbox(a3, BodyToCheckHB, out intersection, out Normal, out ContactTime))
+                        {
+                            if (BodyToCheck.Collidable || body.Collidable)
+                            {
+                                body.Velocity += Normal * new Vector2(Math.Abs(body.hitbox[0].VX), Math.Abs(body.hitbox[0].VY));
+                                body.VelocityForced += Normal * new Vector2(Math.Abs(body.VelocityForced.X), Math.Abs(body.VelocityForced.Y));
+                                body.CollisionNormal.Add(Normal);
+                                body.UpdateHitboxVelocity();
+
+                                body.OnCollision(BodyToCheck, intersection);
+                                BodyToCheck.OnCollision(body, intersection);
+                            }
+
+                            body.UpdateHitboxVelocity();
+
+                            body.BelongedObject?.OnCollision(BodyToCheck);
+                            BodyToCheck.BelongedObject?.OnCollision(body);
+
+                            body.UpdateHitboxVelocity();
+                        }
+                        else
+                        {
+                            body.OnNoCollision(BodyToCheck);
+                            BodyToCheck.OnNoCollision(body);
+
+                            body.UpdateHitboxVelocity();
+                        }
                     }
-
-                    body.UpdateHitboxVelocity();
-
-                    body.BelongedObject?.OnCollision(BodyToCheck);
-                    BodyToCheck.BelongedObject?.OnCollision(body);
-
-                    body.UpdateHitboxVelocity();
-                }
-                else
-                {
-                    body.OnNoCollision(BodyToCheck);
-                    BodyToCheck.OnNoCollision(body);
-
-                    body.UpdateHitboxVelocity();
                 }
             }
         }
@@ -126,48 +146,42 @@ namespace Rienet
 
         public static bool DynamicHitboxIntersectsHitbox(Hitbox a, Hitbox b, out Vector2 Intersection, out Vector2 Normal, out float ContactTime)
         {
-            //yif(a.VX == 0 && a.VY == 0)
-            //return false;
-
             Hitbox B_Expanded = new(b.X - (a.W / 2), b.Y - (a.H / 2), b.W + a.W, b.H + a.H);
 
             Vector2 LinePos = new(a.X + (a.W / 2), a.Y + (a.H / 2));
 
-            return LineIntersectsHitbox(new Line(LinePos.X, LinePos.Y, LinePos.X + a.VX, LinePos.Y + a.VY), B_Expanded, out Intersection, out Normal, out ContactTime) && ContactTime <= 1;
+            return LineIntersectsHitbox(new Line(LinePos.X, LinePos.Y, LinePos.X + a.VX, LinePos.Y + a.VY), B_Expanded, out Intersection, out Normal, out ContactTime) && ContactTime >= 0 && ContactTime <= 1;
         }
 
-        public static bool DynamicHitboxIntersectsCircle(Hitbox a, CircularHitbox b, out Vector2 Intersection, out Vector2 Normal, out float ContactTime)
+        public static bool DynamicCircleIntersectsHitbox(CircularHitbox a, Hitbox b, out Vector2 Intersection, out Vector2 Normal, out float OverLap)
         {
-            Vector2 LinePos = new(a.X + (a.W / 2), a.Y + (a.H / 2));
+            Vector2 PotentialPos = a.pos + a.vel;
 
-            bool CircIntersection = LineIntersectsCircle(new Line(LinePos.X, LinePos.Y, LinePos.X + a.VX, LinePos.Y + a.VY), b, out Intersection, out Normal, out ContactTime) && ContactTime <= 1;
+            Vector2 NearestPoint = new(
+                Math.Max(b.VX, Math.Min(PotentialPos.X, b.VX + 1)),
+                Math.Max(b.VY, Math.Min(PotentialPos.Y, b.VY + 1))
+            );
 
-            if (!CircIntersection) return false;
+            var RayToNearestPoint = NearestPoint - PotentialPos;
 
-            //modify intersection pos based on comparison with b's center, adding a's width and height, kinda like an eclipse
-            Intersection += new Vector2(Intersection.X > b.X ? a.W / 2 : Intersection.X < b.X ? -a.W / 2 : 0, Intersection.Y > b.Y ? a.H / 2 : Intersection.Y < b.Y ? -a.H / 2 : 0);
-            return true;
-        }
+            OverLap = a.Radius - RayToNearestPoint.Length();
+            if (double.IsNaN(OverLap))
+                OverLap = 0;
 
-        public static bool DynamicCircleIntersectsHitbox(CircularHitbox a, Hitbox b, out Vector2 Intersection, out Vector2 Normal, out float ContactTime)
-        {
-            Intersection = default; Normal = default; ContactTime = 0;
+            if (OverLap > 0)
+            {
+                RayToNearestPoint.Normalize();
+                PotentialPos = RayToNearestPoint * OverLap; //now actual landing pos
+                Intersection = PotentialPos;
+                Normal = a.pos - PotentialPos;
+                Normal.Normalize();
+                return true;
+            }
 
-            Hitbox B_Expanded = new(b.X - a.Radius, b.Y - a.Radius, b.W + (a.Radius * 2), b.H + (a.Radius * 2));
+            Normal = Vector2.Zero;
+            Intersection = Vector2.Zero;
 
-            Vector2 LinePos = new(a.X + a.Radius, a.Y + a.Radius);
-
-            Line line = new(LinePos.X, LinePos.Y, LinePos.X + a.VX, LinePos.Y + a.VY);
-
-            if (!LineIntersectsHitbox(line, B_Expanded, out Vector2 InitialInters, out Vector2 InitialNormal, out float InitalContactTime) && InitalContactTime <= 1) return false;
-
-            //check if it's on the corners, if so check if circular corners still allows Collision
-            //up west
-            if (InitialInters.Y >= b.Y + b.H && InitialInters.X <= b.X) { return LineIntersectsCircle(line, new CircularHitbox(b.X, b.Y + b.H, a.Radius), out Intersection, out Normal, out ContactTime); }
-            else if (InitialInters.Y > b.Y + b.H && InitialInters.X >= b.X + b.W) { return LineIntersectsCircle(line, new CircularHitbox(b.X, b.Y + b.H, a.Radius), out Intersection, out Normal, out ContactTime); }
-            else if (InitialInters.Y < b.Y && InitialInters.X <= b.X) { return LineIntersectsCircle(line, new CircularHitbox(b.X, b.Y + b.H, a.Radius), out Intersection, out Normal, out ContactTime); }
-            else if (InitialInters.Y > b.Y && InitialInters.X >= b.X + b.W) { return LineIntersectsCircle(line, new CircularHitbox(b.X, b.Y + b.H, a.Radius), out Intersection, out Normal, out ContactTime); }
-            else { return true; }
+            return false;
         }
 
         public static bool DynamicCircleIntersectsCircle(CircularHitbox a, CircularHitbox b, out Vector2 Intersection, out Vector2 Normal, out float ContactTime)
@@ -306,10 +320,10 @@ namespace Rienet
 
         public static bool LineIntersectsLine(Line l1, Line l2, out Vector2 pointIfExists)
         {
-            Vector2 A = new (l1.x1, l1.y1);
-            Vector2 B = new (l1.x2, l1.y2);
-            Vector2 C = new (l2.x1, l2.y1);
-            Vector2 D = new (l2.x2, l2.y2);
+            Vector2 A = new(l1.x1, l1.y1);
+            Vector2 B = new(l1.x2, l1.y2);
+            Vector2 C = new(l2.x1, l2.y1);
+            Vector2 D = new(l2.x2, l2.y2);
             // Line AB represented as a1x + b1y = c1
             double a1 = B.Y - A.Y;
             double b1 = A.X - B.X;

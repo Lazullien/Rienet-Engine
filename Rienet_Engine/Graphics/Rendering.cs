@@ -68,26 +68,6 @@ namespace Rienet
                 graphicsComponent.Draw(spriteBatch);
         }
 
-        //fault here
-        public static void DrawHitbox(Hitbox hb, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel GamePanel, Texture2D blankRect)
-        {
-            Vector2 drawPos = ToScreenPos(new Vector2(hb.X, hb.Y + hb.H), CenterPos);
-            Vector2 size = new Vector2(hb.W, hb.H) * GamePanel.TileSize;
-
-            if (DrawPosInScreen(drawPos, size))
-            {
-                DrawRectangle(sb, new Rectangle((int)drawPos.X, (int)drawPos.Y, (int)size.X, (int)size.Y), Color.Red, 3, blankRect);
-            }
-        }
-
-        public static void DrawCircularHitbox(CircularHitbox circ, Vector2 CenterPos, Scene BelongedScene, SpriteBatch sb, GamePanel GamePanel, Texture2D blankCirc)
-        {
-            Vector2 drawPos = ToScreenPos(new Vector2(circ.X, circ.Y), CenterPos);
-            float screenRad = circ.Radius * GamePanel.TileSize;
-
-            DrawCircle(sb, drawPos, screenRad, Color.Red, blankCirc);
-        }
-
         public static void DrawLineSegment(SpriteBatch spriteBatch, Vector2 point1, Vector2 point2, Color color, int lineWidth, Texture2D blankRect)
         {
             float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
@@ -108,14 +88,56 @@ namespace Rienet
             }
         }
 
-        public static void DrawRectangle(SpriteBatch spriteBatch, Rectangle rectangle, Color color, int lineWidth, Texture2D blankRect)
+        public static void DrawRectangle(SpriteBatch spriteBatch, Vector2 pos, Vector2 size, Vector2 CenterPos, Color color, Texture2D blankRect)
         {
-            spriteBatch.Draw(blankRect, new Vector2(rectangle.X, rectangle.Y), null, Color.Chocolate, 0f, Vector2.Zero, new Vector2(rectangle.Width, rectangle.Height), SpriteEffects.None, 0f);
+            Vector2 drawPos = ToScreenPos(new Vector2(pos.X, pos.Y + size.Y), CenterPos);
+            Vector2 drawSize = new Vector2(size.X, size.Y) * GamePanel.TileSize;
+
+            if (DrawPosInScreen(drawPos, drawSize))
+            {
+                spriteBatch.Draw(blankRect, drawPos, null, color, 0f, Vector2.Zero, drawSize, SpriteEffects.None, 0f);
+            }
         }
 
-        public static void DrawCircle(SpriteBatch spritebatch, Vector2 pos, float radius, Color color, Texture2D blankCirc)
+        public static void DrawCircle(SpriteBatch spritebatch, Vector2 pos, float radius, Vector2 CenterPos, Color color, GraphicsDevice device)
         {
-            spritebatch.Draw(blankCirc, new Vector2(pos.X - radius, pos.Y - radius), null, Color.Red, 0f, Vector2.Zero, new Vector2(radius * 2, radius * 2), SpriteEffects.None, 0f);
+            Vector2 drawPos = ToScreenPos(new Vector2(pos.X - radius, pos.Y + radius), CenterPos);
+            Vector2 drawSize = new Vector2(radius * 2, radius * 2) * GamePanel.TileSize;
+
+            if (DrawPosInScreen(drawPos, drawSize))
+            {
+                //try to make one of these cached during circle creation to reduce lag, but considering how rare this method is gonna be called there's probably no need
+                spritebatch.Draw(GetCircleTexture(radius * GamePanel.TileSize, color, device), drawPos, null, color, 0f, Vector2.Zero, 1, SpriteEffects.None, 0f);
+            }
+        }
+
+        public static Texture2D GetCircleTexture(float Radius, Color color, GraphicsDevice graphicsDevice)
+        {
+            int Diameter = (int)(Radius * 2);
+            Texture2D texture = new(graphicsDevice, Diameter, Diameter);
+            Color[] colorData = new Color[Diameter * Diameter];
+
+            float RadiusSq = Radius * Radius;
+
+            for (int x = 0; x < Diameter; x++)
+            {
+                for (int y = 0; y < Diameter; y++)
+                {
+                    int index = x * Diameter + y;
+                    Vector2 pos = new(x - Radius, y - Radius);
+                    if (pos.LengthSquared() <= RadiusSq)
+                    {
+                        colorData[index] = color;
+                    }
+                    else
+                    {
+                        colorData[index] = Color.Transparent;
+                    }
+                }
+            }
+
+            texture.SetData(colorData);
+            return texture;
         }
     }
 }

@@ -2,7 +2,8 @@ namespace Rienet
 {
     public interface IState
     {
+        public void Start();
         public void Update();
-        public void TryBreak();
+        public void End();
     }
 }

@@ -6,12 +6,12 @@ namespace Rienet
     public class WorldBody
     {
         //the air friction or the friction on tiles without any collision
-        public static float DefaultFriction = 0.012f;
-        public static Vector2 West = new Vector2(-1, 0), East = new Vector2(1, 0), Up = new Vector2(0, 1), Down = new Vector2(0, -1);
-        public static Vector2 Gravity = new Vector2(0, -0.023f);
-        public static float PXSize = 1f / GamePanel.PixelsInTile;
+        public const float DefaultFriction = 0.012f;
+        public static Vector2 West = new(-1, 0), East = new(1, 0), Up = new(0, 1), Down = new(0, -1);
+        public static Vector2 Gravity = new(0, -0.023f);
+        public const float PXSize = 1f / GamePanel.PixelsInTile;
         public Dictionary<int, Scene> Scenes;
-        public ulong GameTime;
+        public double GameTime;
 
         public WorldBody()
         {

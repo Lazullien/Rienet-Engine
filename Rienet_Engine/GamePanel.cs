@@ -114,6 +114,7 @@ namespace Rienet
             _spriteBatch.DrawString(_spriteFont, Time.ToString(), new Vector2(0, 20), Color.Yellow);
             //_spriteBatch.Draw(pl.current, pl.pos, null, Color.White, 0, new Vector2(1, 1), new Vector2(0.5f, 0.5f), SpriteEffects.None, 0);
             _spriteBatch.DrawString(_spriteFont, pl.Health.ToString(), new Vector2(0, 40), Color.Red);
+            _spriteBatch.DrawString(_spriteFont, pl.DamageCharge.ToString(), new Vector2(0, 60), Color.Pink);
             _spriteBatch.End();
             base.Draw(gameTime);
         }

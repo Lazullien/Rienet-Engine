@@ -9,13 +9,12 @@ namespace Rienet
     public class Scene : IGameObject
     {
         public int ID;
-        public int X, Y, StartX, StartY, W, H;
+        public Vector2 pos, startPos, size;
         public Hitbox[] Hitboxes;
         public Tile[,] SceneMap;
-        //readonly Quadtree HitboxTree;
         public Dictionary<Vector2, HitboxChunk> HitboxChunks;
         public List<PhysicsBody> BodiesInScene;
-        public List<Entity> EntitiesInScene; //as a symbol of existance
+        public List<Entity> EntitiesInScene; //eventually change this to objects in scene
         public Background BG;
         public GraphicsComponent Overlay;
 
@@ -125,15 +124,6 @@ namespace Rienet
             }
         }
 
-        public void OnDestruction()
-        {
-            //
-        }
-
-        public void Reload()
-        {
-        }
-
         public bool GetGridInfo(Vector2 pos, out Tile tile)
         {
             int X = (int)pos.X, Y = (int)pos.Y;
@@ -191,6 +181,64 @@ namespace Rienet
                         chunk.AddBody(body);
                 }
             }
+        }
+
+        public void OnDestruction() { }
+
+        public void Reload() { }
+
+        public float X
+        {
+            get { return pos.X; }
+            set { pos.X = value; }
+        }
+
+        public float Y
+        {
+            get { return pos.Y; }
+            set { pos.Y = value; }
+        }
+
+        public float StartX
+        {
+            get { return startPos.X; }
+            set { startPos.X = value; }
+        }
+
+        public float StartY
+        {
+            get { return startPos.Y; }
+            set { startPos.Y = value; }
+        }
+
+        public float W
+        {
+            get { return size.X; }
+            set { size.X = value; }
+        }
+
+        public float H
+        {
+            get { return size.Y; }
+            set { size.Y = value; }
+        }
+    }
+
+    public struct Transition
+    {
+        public Rectangle Area;
+        public Scene R1;
+        public Vector2 SpawnPosInR1;
+        public Scene R2;
+        public Vector2 SpawnPosInR2;
+
+        public Transition(Rectangle Area, Scene R1, Vector2 SpawnPosInR1, Scene R2, Vector2 SpawnPosInR2)
+        {
+            this.Area = Area;
+            this.R1 = R1;
+            this.SpawnPosInR1 = SpawnPosInR1;
+            this.R2 = R2;
+            this.SpawnPosInR2 = SpawnPosInR2;
         }
     }
 }

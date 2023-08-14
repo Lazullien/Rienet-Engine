@@ -24,17 +24,8 @@ namespace Rienet
             //draw the deepest layer to shallowest layer of backgrounds, fix to pixels
             foreach (Layer l in layers)
             {
-                //probably this is wrong
-                //Vector2 SceneSize = new(Scene.W, Scene.H);
-                //cause speed for moving through Scene is counted as "1"
-                //Vector2 HalfMovableArea = SceneSize / 2 * l.DisplacementScrollSpeed;
-                //Vector2 D = POV - (SceneSize / 2);
-                //Vector2 BGDisplayCen = (SceneSize / 2) + (D / (SceneSize / 2) * (HalfMovableArea / 2));
-                //Vector2 DrawposInScene = BGDisplayCen - (HalfMovableArea / 2);
-                Vector2 Displacement = l.DisplacementScrollSpeed * (POV - l.Pos); //change this to displacement in Scene
+                Vector2 Displacement = l.DisplacementScrollSpeed * (POV - l.Pos);
                 Vector2 DrawposInScene = new Vector2(l.Pos.X, l.Pos.Y + l.Size.Y) + Displacement;
-                //Vector2 DrawposInScene = (l.Size * POV / (4 * SceneSize)) - l.Size + (SceneSize / 2);
-                //get draw pos based on scrollspeed and distance of the pos from the start of the bg
                 DrawposInScene -= new Vector2(DrawposInScene.X % WorldBody.PXSize, DrawposInScene.Y % WorldBody.PXSize);
                 Vector2 Drawpos = BasicRenderingAlgorithms.ToScreenPos(DrawposInScene, Cam.pos);
                 spriteBatch.Draw(l.Texture, Drawpos, null, Color.White, 0, Vector2.Zero, new Vector2(GamePanel.TileSize / GamePanel.PixelsInTile, GamePanel.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 1);

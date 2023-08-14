@@ -33,7 +33,6 @@ namespace Rienet
 
         private Animation CurrentAnimation;
         private bool Animating;
-        readonly bool Looping;
         //in seconds
         private float AnimationTimer;
         //this is separate from timer because timer time isn't always added by 1, this, being the index of the animation frames array, is
@@ -45,10 +44,9 @@ namespace Rienet
         //vertical position in spritesheet
         public int AnimationID;
 
-        public AnimatedSheet(Vector2 Pos, Vector2 Size, Texture2D Texture, int SplitX, int SplitY, bool Animating, bool Looping) : base(Pos, Size, Texture, SplitX, SplitY)
+        public AnimatedSheet(Vector2 Pos, Vector2 Size, Texture2D Texture, int SplitX, int SplitY, bool Animating) : base(Pos, Size, Texture, SplitX, SplitY)
         {
             this.Animating = Animating;
-            this.Looping = Looping;
             Animations = new();
         }
 
@@ -61,8 +59,28 @@ namespace Rienet
         public void SetAnimation(int ID)
         {
             if (Animations.ContainsKey(ID))
-                CurrentAnimation = Animations[ID];
+                AnimationID = ID;
         }
+
+        public void Pause(bool HasDesignatedFrame, int DesignatedFrame)
+        {
+            if (HasDesignatedFrame)
+            {
+                AnimationFrame = DesignatedFrame;
+                CurrentFrame = DesignatedFrame;
+                IndexX = CurrentFrame;
+            }
+
+            Animating = false;
+        }
+
+        public void Reset()
+        {
+            AnimationFrame = 0;
+            CurrentFrame = CurrentAnimation.Frames[AnimationFrame];
+        }
+
+        public void Resume() => Animating = true;
 
         public override void Update()
         {
@@ -166,7 +184,7 @@ namespace Rienet
 
     public abstract class GraphicsComponent
     {
-        public static Texture2D BlankRect = new(GamePanel.Instance.GraphicsDevice, 1, 1);
+        internal Texture2D BlankRect = new(GamePanel.Instance.GraphicsDevice, 1, 1);
         public Vector2 Pos;
         public Vector2 RawSize;
         public Vector2 ShownSize;
