@@ -18,11 +18,6 @@ namespace Rienet
             Scenes = new Dictionary<int, Scene>();
         }
 
-        public void LoadScenes()
-        {
-
-        }
-
         public bool GetGridInfo(int Scene, Vector2 pos, out Tile tile)
         {
             bool SceneExists = Scenes.TryGetValue(Scene, out Scene targetScene);

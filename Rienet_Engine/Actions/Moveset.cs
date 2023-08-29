@@ -7,13 +7,13 @@ namespace Rienet
     public abstract class Moveset
     {
         protected Entity TargetEntity;
-        protected bool HasDuration;
-        protected float Duration;
+        public bool HasDuration { get; private set; }
+        public float Duration { get; private set; }
 
-        protected bool InMoveset;
-        protected bool FirstTickInMoveset;
-        protected float TimeSinceStarted;
-        protected float TimeSinceEnd;
+        public bool InMoveset { get; protected set; }
+        public bool FirstTickInMoveset { get; protected set; }
+        public float TimeSinceStarted { get; private set; }
+        public float TimeSinceEnd { get; private set; }
 
         protected Moveset(Entity TargetEntity, bool HasDuration, float Duration)
         {
@@ -26,7 +26,7 @@ namespace Rienet
 
         public virtual void CheckInvocation()
         {
-            if(InMoveset && FirstTickInMoveset) Replace(in TargetEntity.CurrentMoveSet, out TargetEntity.CurrentMoveSet, this);
+            if (InMoveset && FirstTickInMoveset) Replace(in TargetEntity.CurrentMoveSet, out TargetEntity.CurrentMoveSet, this);
 
             if (!InMoveset)
             {
@@ -45,7 +45,7 @@ namespace Rienet
         {
             TimeSinceEnd = 0;
 
-            if(!InMoveset || (HasDuration && TimeSinceStarted >= Duration))
+            if (!InMoveset || (HasDuration && TimeSinceStarted >= Duration))
             {
                 OnEnd();
                 return;

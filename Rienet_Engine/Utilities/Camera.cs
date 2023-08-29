@@ -14,6 +14,8 @@ namespace Rienet
         public Vector2 size;
         public Vector2 VisibleSize;
         public Scene Scene;
+        public bool LockOn;
+        public Entity LockOnEntity;
         readonly GamePanel gp;
         readonly WorldBody world;
 
@@ -43,16 +45,33 @@ namespace Rienet
             VisibleSize = new((float)GamePanel.Width / GamePanel.TileSize, (float)GamePanel.Height / GamePanel.TileSize);
             Vector2 LastPos = pos;
 
-            float XMin = VisibleSize.X / 2, XMax = Scene.W - (VisibleSize.X / 2), YMin = VisibleSize.Y / 2, YMax = Scene.H - (VisibleSize.Y / 2);
-            bool GreaterX = playerPosition.X + (playerSize.X / 2) > XMin, MinorX = playerPosition.X + (playerSize.X / 2) < XMax, GreaterY = playerPosition.Y + (playerSize.Y / 2) > YMin, MinorY = playerPosition.Y + (playerSize.Y / 2) < YMax;
-            // Follow the player in the axis where the Scene didn't end.
-            if (GreaterX && MinorX)
-                pos.X = playerPosition.X + (playerSize.X / 2);
-            else pos.X = GreaterX ? XMax : MinorX ? XMin : 0;
+            //check if camera range is bigger than room, if so set axis at room center
+            if (VisibleWidth > Scene.W)
+            {
+                pos.X = Scene.W / 2;
+            }
+            else
+            {
+                float XMin = VisibleSize.X / 2, XMax = Scene.W - (VisibleSize.X / 2);
+                bool GreaterX = playerPosition.X + (playerSize.X / 2) > XMin, MinorX = playerPosition.X + (playerSize.X / 2) < XMax;
+                // Follow the player in the axis where the Scene didn't end.
+                if (GreaterX && MinorX)
+                    pos.X = playerPosition.X + (playerSize.X / 2);
+                else pos.X = GreaterX ? XMax : MinorX ? XMin : 0;
+            }
 
-            if (GreaterY && MinorY)
-                pos.Y = playerPosition.Y + (playerSize.Y / 2);
-            else pos.Y = GreaterY ? YMax : MinorY ? YMin : 0;
+            if (VisibleHeight > Scene.H)
+            {
+                pos.Y = Scene.H / 2;
+            }
+            else
+            {
+                float YMin = VisibleSize.Y / 2, YMax = Scene.H - (VisibleSize.Y / 2);
+                bool GreaterY = playerPosition.Y + (playerSize.Y / 2) > YMin, MinorY = playerPosition.Y + (playerSize.Y / 2) < YMax;
+                if (GreaterY && MinorY)
+                    pos.Y = playerPosition.Y + (playerSize.Y / 2);
+                else pos.Y = GreaterY ? YMax : MinorY ? YMin : 0;
+            }
 
             MovePos = pos - LastPos;
 
@@ -139,6 +158,18 @@ namespace Rienet
         {
             get { return size.Y; }
             set { size.Y = value; }
+        }
+
+        public float VisibleWidth
+        {
+            get { return VisibleSize.X; }
+            set { VisibleSize.X = value; }
+        }
+
+        public float VisibleHeight
+        {
+            get { return VisibleSize.Y; }
+            set { VisibleSize.Y = value; }
         }
     }
 }

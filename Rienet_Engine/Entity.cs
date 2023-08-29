@@ -11,7 +11,7 @@ namespace Rienet
     public abstract class Entity : IBodyVenue
     {
         public const float IFrameTime = 1;
-        public const float KnockbackGap = 1f / 16;
+        public const float KnockbackGap = 1f / 8;
 
         public Vector2 Spawnpoint;
         public Vector2 pos;
@@ -25,7 +25,6 @@ namespace Rienet
         public Vector2 BodyTextureDifference;
         public Texture2D current;
         public int id;
-        protected GamePanel game;
         public Scene BelongedScene;
         public bool InTransition;
         public GraphicsComponent Graphics;
@@ -34,9 +33,8 @@ namespace Rienet
         public float MaxHealth, MinHealth;
         public float TimeSinceDamage, TimeSinceKnockback;
 
-        protected Entity(GamePanel game, Scene Scene)
+        protected Entity(Scene Scene)
         {
-            this.game = game;
             MinHealth = 0;
             SetScene(Scene);
         }
@@ -51,8 +49,11 @@ namespace Rienet
         public void SetPos(Vector2 p)
         {
             pos = p;
-            body.pos = pos + BodyTextureDifference;
-            body.PixelPos = body.pos - new Vector2(body.X % WorldBody.PXSize, body.Y % WorldBody.PXSize);
+            if (body != null)
+            {
+                body.pos = pos + BodyTextureDifference;
+                body.PixelPos = body.pos - new Vector2(body.X % WorldBody.PXSize, body.Y % WorldBody.PXSize);
+            }
         }
 
         public void SetMove(float x, float y)
@@ -62,16 +63,20 @@ namespace Rienet
 
         public virtual void Update()
         {
-            //add gravity
-            if (Gravitational)
-                body.VelocityForced += WorldBody.Gravity;
-            //add move to velocity
-            body.Velocity += Move;
+            if (body != null)
+            {
+                body.BelongedScene = BelongedScene;
+                //add gravity
+                if (Gravitational)
+                    body.VelocityForced += WorldBody.Gravity;
+                //add move to velocity
+                body.Velocity += Move;
 
-            body.momentumPotential = body.inertia - body.Roughness;
+                body.momentumPotential = body.inertia - body.Roughness;
 
-            body.Update();
-            pos = body.PixelPos - BodyTextureDifference;
+                body.Update();
+                pos = body.PixelPos - BodyTextureDifference;
+            }
 
             if (Health <= MinHealth) OnDestruction();
 

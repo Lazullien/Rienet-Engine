@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -11,19 +12,22 @@ namespace Rienet
         public bool Collidable;
         public IBodyVenue BelongedObject;
         public Scene BelongedScene;
-        public List<Hitbox> hitbox;
+        public List<Hitbox> hitbox = new();
         public Vector2 pos, PixelPos, size, MainForcePoint; //position and total width and height
         public Vector2 PotentialVelocity; //stacked up and only usable midair
         public Vector2 VelocityForced;
         public Vector2 VelocityIgnoringFriction; //ONLY ONE VELOCITY SHOULD EXIST
         public Vector2 Velocity; //only slowed by friction
         public Vector2 TotalFriction;
-        public List<Vector2> CollisionNormal;
+        public List<Vector2> CollisionNormal = new();
         public bool VelocityCausesCollision;
         public Vector2 CollisionAtVelocity;
         public float inertia;
         public float momentumPotential;
         public float Roughness;
+
+        public Action action;
+        public float actionTimer;
 
         public PhysicsBody(IBodyVenue BelongedObject, bool Collidable)
         {
@@ -81,6 +85,7 @@ namespace Rienet
             MainForcePoint = pos + (size / 2);
 
             BelongedScene?.AddBody(this);
+            action?.Invoke();
         }
 
         public virtual void OnNonCollidableCollision(PhysicsBody Target, Vector2 Intersection)

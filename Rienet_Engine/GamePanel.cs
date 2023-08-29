@@ -25,15 +25,18 @@ namespace Rienet
         public static float TimeOneFrame = 1f / 60;
 
         public static KeyboardState keyState;
+        public static MouseState mouseState;
+        public static GamePadState gamePadState;
+
         public static WorldBody World;
         public static WorldProjection projection;
         public static UIHandler uiHandler;
 
-#region  toremove
+        #region  toremove
         //these should be removed
         public Player pl;
-        public Camera cam;
-#endregion
+        public static Camera cam;
+        #endregion
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -49,7 +52,7 @@ namespace Rienet
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            DeviceInput.Initialize();
             World = new WorldBody();
             uiHandler = new UIHandler(this);
 
@@ -70,9 +73,9 @@ namespace Rienet
             //add objects to scene here
             Tester.LoadTestingObjects(Content);
             AteloInitializer.BuildWorld(World);
-            cam = new Camera(new Vector2(0, 0), new Vector2(35, 35), World.Scenes[0], World, this);
-            pl = new Player(this, World.Scenes[0]);
-            Pawn pawn = new Pawn(this, World.Scenes[0], 1, 0.2f);
+            pl = new Player(World.Scenes[1]);
+            cam = new Camera(new Vector2(0, 0), new Vector2(35, 35), World.Scenes[1], World, this) { LockOnEntity = pl, LockOn = true };
+            _ = new Pawn(World.Scenes[1], 1, 0.2f);
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,12 +83,14 @@ namespace Rienet
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            RawElapsedTime = (float) gameTime.ElapsedGameTime.TotalSeconds;
+            RawElapsedTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             ElapsedTime = RawElapsedTime * TimePace;
 
             Width = Window.ClientBounds.Width;
             Height = Window.ClientBounds.Height;
-            GetKeyboardInput();
+
+            GetInput();
+            DeviceInput.Update();
 
             uiHandler.Update();
 
@@ -93,7 +98,7 @@ namespace Rienet
             cam.Update(pl.pos, pl.DrawBox);
 
             Time++;
-            TimeOneFrame = (float) gameTime.ElapsedGameTime.TotalSeconds;
+            TimeOneFrame = (float)gameTime.ElapsedGameTime.TotalSeconds;
             FPS = 1 / TimeOneFrame;
 
             base.Update(gameTime);
@@ -124,9 +129,11 @@ namespace Rienet
 
         }
 
-        void GetKeyboardInput()
+        void GetInput()
         {
             keyState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
+            //gamePadState = GamePad.GetState();
         }
     }
 }

@@ -8,24 +8,68 @@ namespace Rienet
 {
     public class Scene : IGameObject
     {
+        public WorldBody world;
         public int ID;
         public Vector2 pos, startPos, size;
         public Hitbox[] Hitboxes;
         public Tile[,] SceneMap;
-        public Dictionary<Vector2, HitboxChunk> HitboxChunks;
-        public List<PhysicsBody> BodiesInScene;
-        public List<Entity> EntitiesInScene; //eventually change this to objects in scene
+        public Dictionary<Vector2, HitboxChunk> HitboxChunks = new();
+        public List<PhysicsBody> BodiesInScene = new();
+        public List<Entity> EntitiesInScene = new(); //eventually change this to objects in scene
         public Background BG;
         public GraphicsComponent Overlay;
 
-        public List<Transition> Transitions;
+        public List<Transition> Transitions = new();
 
         //the float here refers to time from request time
-        public Dictionary<PhysicsBody, float> BodiesRequestingUpdate;
+        public Dictionary<PhysicsBody, float> BodiesRequestingUpdate = new();
 
         //temp
         public List<Hitbox> hitboxestodraw = new();
-        //Transition t = new(new Rectangle(0, 15, 1, 4), this, );
+
+        public Scene(int ID, int W, int H, GraphicsComponent Overlay, WorldBody world)
+        {
+            this.world = world;
+            this.ID = ID;
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+
+            this.Overlay = Overlay;
+            OnCreation();
+        }
+
+        public Scene(int W, int H, GraphicsComponent Overlay, WorldBody world)
+        {
+            this.world = world;
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+
+            this.Overlay = Overlay;
+            OnCreation();
+        }
+
+        public Scene(int ID, int W, int H, WorldBody world)
+        {
+            this.world = world;
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.ID = ID;
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+
+            OnCreation();
+        }
+
+        public Scene(int W, int H, WorldBody world)
+        {
+            this.world = world;
+            BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
+            this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
+
+            OnCreation();
+        }
 
         public Scene(int ID, int W, int H, GraphicsComponent Overlay)
         {
@@ -33,13 +77,7 @@ namespace Rienet
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
             SceneMap = new Tile[W, H];
-            HitboxChunks = new();
-            BodiesInScene = new();
-            EntitiesInScene = new();
 
-            Transitions = new();
-
-            BodiesRequestingUpdate = new();
             this.Overlay = Overlay;
             OnCreation();
         }
@@ -49,13 +87,7 @@ namespace Rienet
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
             SceneMap = new Tile[W, H];
-            HitboxChunks = new();
-            BodiesInScene = new();
-            EntitiesInScene = new();
 
-            Transitions = new();
-
-            BodiesRequestingUpdate = new();
             this.Overlay = Overlay;
             OnCreation();
         }
@@ -65,6 +97,7 @@ namespace Rienet
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.ID = ID;
             this.W = W; this.H = H;
+            SceneMap = new Tile[W, H];
 
             OnCreation();
         }
@@ -78,9 +111,6 @@ namespace Rienet
             BodiesInScene = new();
             EntitiesInScene = new();
 
-            Transitions = new();
-
-            BodiesRequestingUpdate = new();
             OnCreation();
         }
 
@@ -226,13 +256,13 @@ namespace Rienet
 
     public struct Transition
     {
-        public Rectangle Area;
-        public Scene R1;
+        public Hitbox Area;
+        public int R1;
         public Vector2 SpawnPosInR1;
-        public Scene R2;
+        public int R2;
         public Vector2 SpawnPosInR2;
 
-        public Transition(Rectangle Area, Scene R1, Vector2 SpawnPosInR1, Scene R2, Vector2 SpawnPosInR2)
+        public Transition(Hitbox Area, int R1, Vector2 SpawnPosInR1, int R2, Vector2 SpawnPosInR2)
         {
             this.Area = Area;
             this.R1 = R1;
