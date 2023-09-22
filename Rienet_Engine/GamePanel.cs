@@ -29,7 +29,6 @@ namespace Rienet
         public static GamePadState gamePadState;
 
         public static WorldBody World;
-        public static WorldProjection projection;
         public static UIHandler uiHandler;
 
         #region  toremove
@@ -54,7 +53,7 @@ namespace Rienet
         {
             DeviceInput.Initialize();
             World = new WorldBody();
-            uiHandler = new UIHandler(this);
+            uiHandler = new UIHandler();
 
             base.Initialize();
         }
@@ -68,14 +67,14 @@ namespace Rienet
             Tile.LoadTileGraphics(Content);
 
             //then load custom content
-            AteloInitializer.LoadAllContent(Content);
+            Initializer.LoadAllContent(Content);
 
             //add objects to scene here
             Tester.LoadTestingObjects(Content);
-            AteloInitializer.BuildWorld(World);
+            Initializer.BuildWorld(World);
             pl = new Player(World.Scenes[1]);
+            var pawn = new Pawn(World.Scenes[1], 1, 0.2f);
             cam = new Camera(new Vector2(0, 0), new Vector2(35, 35), World.Scenes[1], World, this) { LockOnEntity = pl, LockOn = true };
-            _ = new Pawn(World.Scenes[1], 1, 0.2f);
         }
 
         protected override void Update(GameTime gameTime)
@@ -95,7 +94,7 @@ namespace Rienet
             uiHandler.Update();
 
             cam.Scene.Update();
-            cam.Update(pl.pos, pl.DrawBox);
+            cam.Update();
 
             Time++;
             TimeOneFrame = (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -112,7 +111,7 @@ namespace Rienet
             _spriteBatch.Begin(default, default, SamplerState.PointClamp, default, default, default, default);
 
             uiHandler.Draw();
-            //BasicRenderingAlgorithms.DrawHitbox(new Hitbox(16,15,1,1), cam.pos, cam.Scene, _spriteBatch, this, cam.blankRect);
+            //Renderer.DrawHitbox(new Hitbox(16,15,1,1), cam.pos, cam.Scene, _spriteBatch, this, cam.blankRect);
 
             cam.ProjectToScreen(_spriteBatch);
             _spriteBatch.DrawString(_spriteFont, pl.X + "," + pl.Y, new Vector2(0, 0), Color.White);
@@ -129,7 +128,7 @@ namespace Rienet
 
         }
 
-        void GetInput()
+        static void GetInput()
         {
             keyState = Keyboard.GetState();
             mouseState = Mouse.GetState();

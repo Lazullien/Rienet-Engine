@@ -3,68 +3,48 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Rienet
 {
-    public interface IUI
+    public abstract class UI
     {
-        public void Update(GamePanel game);
-        public void Draw(GamePanel panel);
-    }
-
-    public abstract class GUI : IUI
-    {
-        GamePanel game;
         public Texture2D DefaultTexture;
         public int X, Y, W, H; //On Screen
 
-        public GUI(GamePanel game, bool UpdateFirst)
+        public bool Enabled = true;
+        public bool Visible = true;
+
+        public UI(bool UpdateFirst)
         {
-            this.game = game;
             GamePanel.uiHandler.AddUI(this, UpdateFirst);
         }
 
-        public virtual void Update(GamePanel game)
-        {
-        }
+        public abstract void Update();
 
-        public virtual void Draw(GamePanel panel)
-        {
-        }
+        public abstract void Draw();
     }
 
     public class UIHandler
     {
-        GamePanel panel;
-
         //uis that can be loaded
-        List<IUI> UIsToHandle; //parent array
-        List<IUI> UIsToUpdate;
-        List<GUI> GUIsToDraw;
+        List<UI> UIsToHandle = new(); //parent array
+        List<UI> UIsToUpdate = new();
 
-        public UIHandler(GamePanel panel)
-        {
-            this.panel = panel;
-            UIsToHandle = new List<IUI>();
-            UIsToUpdate = new List<IUI>();
-            GUIsToDraw = new List<GUI>();
-        }
-
-        public void AddUI(IUI ui, bool UpdateFirst)
+        public void AddUI(UI ui, bool UpdateFirst)
         {
             UIsToHandle.Add(ui);
-
             if (UpdateFirst) UIsToUpdate.Add(ui);
-            if (ui is GUI gui) GUIsToDraw.Add(gui);
         }
 
         public void Update()
         {
-            foreach (IUI ui in UIsToUpdate)
-                ui.Update(panel);
+            foreach (UI ui in UIsToUpdate)
+                if (ui.Enabled)
+                    ui.Update();
         }
 
         public void Draw()
         {
-            foreach (GUI gui in GUIsToDraw)
-                gui.Draw(panel);
+            foreach (UI ui in UIsToHandle)
+                if (ui.Enabled && ui.Visible)
+                    ui.Draw();
         }
     }
 }

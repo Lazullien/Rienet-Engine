@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Rienet
 {
@@ -11,8 +12,9 @@ namespace Rienet
         public WorldBody world;
         public int ID;
         public Vector2 pos, startPos, size;
+        public int depth;
         public Hitbox[] Hitboxes;
-        public Tile[,] SceneMap;
+        public List<Tile[,]> SceneMap;
         public Dictionary<Vector2, HitboxChunk> HitboxChunks = new();
         public List<PhysicsBody> BodiesInScene = new();
         public List<Entity> EntitiesInScene = new(); //eventually change this to objects in scene
@@ -27,86 +29,110 @@ namespace Rienet
         //temp
         public List<Hitbox> hitboxestodraw = new();
 
-        public Scene(int ID, int W, int H, GraphicsComponent Overlay, WorldBody world)
+        public Scene(int ID, int D, int W, int H, GraphicsComponent Overlay, WorldBody world)
         {
             this.world = world;
             this.ID = ID;
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             this.Overlay = Overlay;
             OnCreation();
         }
 
-        public Scene(int W, int H, GraphicsComponent Overlay, WorldBody world)
+        public Scene(int D, int W, int H, GraphicsComponent Overlay, WorldBody world)
         {
             this.world = world;
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             this.Overlay = Overlay;
             OnCreation();
         }
 
-        public Scene(int ID, int W, int H, WorldBody world)
+        public Scene(int ID, int D, int W, int H, WorldBody world)
         {
             this.world = world;
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.ID = ID;
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             OnCreation();
         }
 
-        public Scene(int W, int H, WorldBody world)
+        public Scene(int D, int W, int H, WorldBody world)
         {
             this.world = world;
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             OnCreation();
         }
 
-        public Scene(int ID, int W, int H, GraphicsComponent Overlay)
+        public Scene(int ID, int D, int W, int H, GraphicsComponent Overlay)
         {
             this.ID = ID;
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             this.Overlay = Overlay;
             OnCreation();
         }
 
-        public Scene(int W, int H, GraphicsComponent Overlay)
+        public Scene(int D, int W, int H, GraphicsComponent Overlay)
         {
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             this.Overlay = Overlay;
             OnCreation();
         }
 
-        public Scene(int ID, int W, int H)
+        public Scene(int ID, int D, int W, int H)
         {
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.ID = ID;
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
 
             OnCreation();
         }
 
-        public Scene(int W, int H)
+        public Scene(int D, int W, int H)
         {
             BG = new Background(new() { new Layer(Tester.TestBackground, Vector2.Zero, 0.5f, Vector2.Zero, Vector2.One, Vector2.Zero) }, this);
             this.W = W; this.H = H;
-            SceneMap = new Tile[W, H];
+            depth = D;
+            SceneMap = new();
+            for (int i = 0; i < D; i++)
+                SceneMap.Add(new Tile[W, H]);
             HitboxChunks = new();
             BodiesInScene = new();
             EntitiesInScene = new();
@@ -154,11 +180,16 @@ namespace Rienet
             }
         }
 
-        public bool GetGridInfo(Vector2 pos, out Tile tile)
+        public Tile[,] GetLayerMap(int depth)
+        {
+            return SceneMap[depth];
+        }
+
+        public bool GetGridInfo(Vector2 pos, Tile[,] Layer, out Tile tile)
         {
             int X = (int)pos.X, Y = (int)pos.Y;
             bool InRange = X >= 0 && X < W && Y >= 0 && Y < H;
-            if (InRange) tile = SceneMap[X, Y]; else tile = null;
+            if (InRange) tile = Layer[X, Y]; else tile = null;
             return tile != null;
         }
 
@@ -251,6 +282,79 @@ namespace Rienet
         {
             get { return size.Y; }
             set { size.Y = value; }
+        }
+    }
+
+    public class Background
+    {
+        readonly Scene Scene;
+        public List<Layer> layers;
+        public Vector2 pos, size;
+        public float ScrollSpeed;
+
+        public Background(List<Layer> layers, Scene Scene)
+        {
+            this.layers = layers;
+            this.Scene = Scene;
+        }
+
+        public void Draw(Vector2 POV, Camera Cam, SpriteBatch spriteBatch)
+        {
+            //draw the deepest layer to shallowest layer of backgrounds, fix to pixels
+            foreach (Layer l in layers)
+            {
+                Vector2 Displacement = l.DisplacementScrollSpeed * (POV - l.Pos);
+                Vector2 DrawposInScene = new Vector2(l.Pos.X, l.Pos.Y + l.Size.Y) + Displacement;
+                DrawposInScene -= new Vector2(DrawposInScene.X % WorldBody.PXSize, DrawposInScene.Y % WorldBody.PXSize);
+                Vector2 Drawpos = Renderer.ToScreenPos(DrawposInScene, Cam.pos);
+                spriteBatch.Draw(l.Texture, Drawpos, null, Color.White, 0, Vector2.Zero, new Vector2(GamePanel.TileSize / GamePanel.PixelsInTile, GamePanel.TileSize / GamePanel.PixelsInTile), SpriteEffects.None, 1);
+            }
+        }
+    }
+
+    public struct Layer
+    {
+        public Texture2D Texture { get; set; }
+        public Vector2 Pos { get; set; }
+        public Vector2 Size { get; set; }
+        public float DisplacementScrollSpeed { get; set; }
+        public Vector2 SelfScrollSpeed { get; set; }
+        public Vector2 MaxDisplacement, MinDisplacement;
+
+        public Layer(Texture2D Texture, Vector2 Pos, float DisplacementScrollSpeed, Vector2 SelfScrollSpeed, Vector2 MaxDisplacement, Vector2 MinDisplacement)
+        {
+            this.Texture = Texture;
+            this.Pos = Pos;
+            this.MaxDisplacement = MaxDisplacement;
+            this.MinDisplacement = MinDisplacement; //in ratio of size
+            if (Texture != null)
+                Size = new Vector2((float)Texture.Width / GamePanel.PixelsInTile, (float)Texture.Height / GamePanel.PixelsInTile);
+            else Size = Vector2.Zero;
+            this.DisplacementScrollSpeed = DisplacementScrollSpeed;
+            this.SelfScrollSpeed = SelfScrollSpeed;
+        }
+    }
+
+    public class HitboxChunk
+    {
+        public const int W = 4, H = 4;
+        public List<PhysicsBody> BodiesInGrid;
+        public float X, Y;
+
+        public HitboxChunk(int X, int Y)
+        {
+            this.X = X; this.Y = Y;
+            BodiesInGrid = new List<PhysicsBody>();
+        }
+
+        public void AddBody(PhysicsBody Body)
+        {
+            if (!BodiesInGrid.Contains(Body)) BodiesInGrid.Add(Body);
+        }
+
+        public void RemoveBody(PhysicsBody Body)
+        {
+            if (BodiesInGrid.Contains(Body)) BodiesInGrid.Remove(Body);
         }
     }
 

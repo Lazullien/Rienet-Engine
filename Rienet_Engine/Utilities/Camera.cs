@@ -40,8 +40,16 @@ namespace Rienet
         }
 
         //fix camera snapping when nearing end of Scene
-        public void Update(Vector2 playerPosition, Vector2 playerSize)
+        public void Update()
         {
+            Vector2 entityPosition = pos, entitySize = Vector2.Zero;
+
+            if (LockOn)
+            {
+                entityPosition = LockOnEntity.pos;
+                entitySize = LockOnEntity.DrawBox;
+            }
+
             VisibleSize = new((float)GamePanel.Width / GamePanel.TileSize, (float)GamePanel.Height / GamePanel.TileSize);
             Vector2 LastPos = pos;
 
@@ -53,10 +61,10 @@ namespace Rienet
             else
             {
                 float XMin = VisibleSize.X / 2, XMax = Scene.W - (VisibleSize.X / 2);
-                bool GreaterX = playerPosition.X + (playerSize.X / 2) > XMin, MinorX = playerPosition.X + (playerSize.X / 2) < XMax;
+                bool GreaterX = entityPosition.X + (entitySize.X / 2) > XMin, MinorX = entityPosition.X + (entitySize.X / 2) < XMax;
                 // Follow the player in the axis where the Scene didn't end.
                 if (GreaterX && MinorX)
-                    pos.X = playerPosition.X + (playerSize.X / 2);
+                    pos.X = entityPosition.X + (entitySize.X / 2);
                 else pos.X = GreaterX ? XMax : MinorX ? XMin : 0;
             }
 
@@ -67,9 +75,9 @@ namespace Rienet
             else
             {
                 float YMin = VisibleSize.Y / 2, YMax = Scene.H - (VisibleSize.Y / 2);
-                bool GreaterY = playerPosition.Y + (playerSize.Y / 2) > YMin, MinorY = playerPosition.Y + (playerSize.Y / 2) < YMax;
+                bool GreaterY = entityPosition.Y + (entitySize.Y / 2) > YMin, MinorY = entityPosition.Y + (entitySize.Y / 2) < YMax;
                 if (GreaterY && MinorY)
-                    pos.Y = playerPosition.Y + (playerSize.Y / 2);
+                    pos.Y = entityPosition.Y + (entitySize.Y / 2);
                 else pos.Y = GreaterY ? YMax : MinorY ? YMin : 0;
             }
 
@@ -88,13 +96,18 @@ namespace Rienet
             Scene.BG?.Draw(origin, this, spriteBatch);
 
             // Render all the tiles that the camera touches.
-            for (float x = origin.X; x < Math.Ceiling(origin.X + size.X); x++)
+            for (int z = 0; z < Scene.depth; z++)
             {
-                for (float y = origin.Y; y < Math.Ceiling(origin.Y + size.Y); y++)
+                Tile[,] layer = Scene.GetLayerMap(z);
+                //TODO cache the layer here
+                for (float x = origin.X; x < Math.Ceiling(origin.X + size.X); x++)
                 {
-                    bool tileExists = Scene.GetGridInfo(new Vector2(x, y), out Tile tile);
-                    if (tileExists)
-                        tile.Draw(pos, spriteBatch, gp);
+                    for (float y = origin.Y; y < Math.Ceiling(origin.Y + size.Y); y++)
+                    {
+                        bool tileExists = Scene.GetGridInfo(new Vector2(x, y), layer, out Tile tile);
+                        if (tileExists)
+                            tile.Draw(pos, spriteBatch, gp);
+                    }
                 }
             }
 
@@ -102,26 +115,30 @@ namespace Rienet
             GraphicsComponent Overlay = Scene.Overlay;
 
             if (Overlay is SpriteSheet spriteSheet)
-                BasicRenderingAlgorithms.DrawSpriteInSheet(spriteSheet, Vector2.Zero, pos, spriteBatch);
+                Renderer.DrawSpriteInSheet(spriteSheet, Vector2.Zero, pos, spriteBatch);
             else if (Overlay is Image image)
-                BasicRenderingAlgorithms.DrawImage(image, Vector2.Zero, pos, spriteBatch);
+                Renderer.DrawImage(image, Vector2.Zero, pos, spriteBatch);
             else if (Overlay != null)
-                BasicRenderingAlgorithms.DrawComponent(Overlay, Vector2.Zero, pos, spriteBatch);
+                Renderer.DrawComponent(Overlay, Vector2.Zero, pos, spriteBatch);
 
             foreach (PhysicsBody body in Scene.BodiesInScene)
             {
-                Vector2 DrawPos = BasicRenderingAlgorithms.ToScreenPos(body.pos, pos);
+                Vector2 DrawPos = Renderer.ToScreenPos(body.pos, pos);
                 body.Draw((int)DrawPos.X, (int)DrawPos.Y, spriteBatch, blankRect);
             }
 
+            //also don't draw every single entity in scene, just the ones close enough, this would be fine for atelo, but if i made an open world sandbox it would suck
             foreach (Entity e in Scene.EntitiesInScene)
                 e.Draw(pos, spriteBatch, gp);
 
+            if (LockOn)
+                LockOnEntity.PerspectiveFilter(spriteBatch, this);
+
             foreach (Hitbox b in Scene.hitboxestodraw)
                 if (b is CircularHitbox c)
-                    BasicRenderingAlgorithms.DrawCircle(spriteBatch, c.pos, c.Radius, pos, Color.Red, gp.GraphicsDevice);
+                    Renderer.DrawCircle(spriteBatch, c.pos, c.Radius, pos, Color.Red, gp.GraphicsDevice);
                 else
-                    BasicRenderingAlgorithms.DrawRectangle(spriteBatch, b.pos, b.size, pos, Color.Red, blankRect);
+                    Renderer.DrawRectangle(spriteBatch, b.pos, b.size, pos, Color.Red, blankRect);
         }
 
         public float X
