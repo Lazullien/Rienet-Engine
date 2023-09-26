@@ -24,6 +24,15 @@ namespace Rienet
             return DrawPos.X + Size.X >= 0 && DrawPos.Y + Size.Y >= 0 && DrawPos.X <= GamePanel.Width && DrawPos.Y <= GamePanel.Height;
         }
 
+        public static void DrawSpriteInSheet(SpriteSheet spriteSheet, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch, Rectangle source)
+        {
+            Vector2 DrawPos = ToScreenPos(SourcePos, CenterPos);
+            spriteSheet.Pos = DrawPos;
+
+            if (DrawPosInScreen(DrawPos, spriteSheet.IndividualSize * spriteSheet.Scale))
+                spriteSheet.Draw(spriteBatch, source);
+        }
+
         public static void DrawSpriteInSheet(SpriteSheet spriteSheet, Vector2 SourcePos, Vector2 CenterPos, SpriteBatch spriteBatch)
         {
             Vector2 DrawPos = ToScreenPos(SourcePos, CenterPos);
