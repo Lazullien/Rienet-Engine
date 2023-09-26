@@ -97,7 +97,7 @@ namespace Rienet
             //if has source then graphics must be a spritesheet or higher level
             if (hasSource)
             {
-                Renderer.DrawSpriteInSheet((SpriteSheet)Graphics, DrawPosInWorld, CenterPos, spriteBatch);
+                Renderer.DrawSpriteInSheet((SpriteSheet)Graphics, DrawPosInWorld, CenterPos, spriteBatch, Source);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace Rienet
     //try to make this directly importable from tiled,
     public class Tileset
     {
-        static int HighestID;
+        static int HighestID = 1;
         //highest id each tileset has in one list
         //this is to help determine which tileset a given id belongs to
         public static List<int> HighestIDsOfTilesets = new();
@@ -238,10 +238,11 @@ namespace Rienet
                 var wrapper = w.tiles[i];
                 //it seems like i have to -1 to get the right ID, WELL I MEAN
                 //CURRENTLY THIS WORKS SO I'M REALLY GONNA DO THAT LATER
-                int rela = wrapper.id - HighestID;
-                tile.id = wrapper.id;
+                int rela = wrapper.id - HighestID + 1;
+                tile.type = wrapper.type;
+                tile.id = wrapper.id + 1;
                 tile.Graphics = Graphics;
-                tile.Source = new(w.tilewidth * rela / width, w.tileheight * rela % width, w.tilewidth, w.tileheight);
+                tile.Source = new(w.tilewidth * (int)Math.Floor((double)rela % width), w.tileheight * (int)Math.Floor((double)rela / width), w.tilewidth, w.tileheight);
                 tile.baseSet = w.name;
                 types[i] = tile;
             }
