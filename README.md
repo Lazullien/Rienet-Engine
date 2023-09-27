@@ -6,8 +6,8 @@ In a "WorldBody" contains many different "Scenes", inside each scene contains "G
 For each project you would have to define more specific importers in the GamePanel class which is essentially the main engine (inherits Game), and script entities' classes yourself
 
 # Updates
-7/23/2023: Started the project
-9/27/2023: Organized a bit and abstractified more content, whilst adding more convenient importing tools 
+1. 7/23/2023: Started the project
+2. 9/27/2023: Organized a bit and abstractified more content, whilst adding more convenient importing tools 
 
 # Plans
 3. Audio
