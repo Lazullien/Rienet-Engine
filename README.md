@@ -11,7 +11,5 @@ For each project you would have to define more specific importers in the GamePan
 
 # Plans
 3. Audio
-4. Top down 2D compatiblity
 5. Effects and Particles
 9. Optimization
-10. entity behavior importing
