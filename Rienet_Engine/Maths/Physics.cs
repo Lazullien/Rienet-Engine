@@ -1,9 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
-using MonoGame;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics;
 
 namespace Rienet
 {
@@ -409,16 +407,6 @@ namespace Rienet
             body.pos += body.Velocity;
         }
 
-        public static void VectorToMovement(PhysicsBody body)
-        {
-            if (body != null)
-            {
-                //based on addedforce, manipulate velocity
-                //body.Velocity = GetVelocity(body.Velocity)
-                //check if this velocity causes a collision
-            }
-        }
-
         public static Vector2 GetFrictionFromPressureAndCoefficient(Vector2 Pressure, float Coefficient)
         {
             Vector2 Opposite = Vector2.Negate(Pressure);
@@ -443,14 +431,6 @@ namespace Rienet
                 Velocity.X = 0;
             if ((BeforeOperation.Y < 0 && Velocity.Y > 0) || (BeforeOperation.Y > 0 && Velocity.Y < 0))
                 Velocity.Y = 0;
-
-            return Velocity;
-        }
-
-        public static Vector2 ForceToVelocity(Vector2 OriginalVelocity, Vector2 Force, float mass)
-        {
-            Vector2 Velocity = OriginalVelocity;
-            Velocity += Force / mass; //not accounting time cause its interval is just one frame
 
             return Velocity;
         }
