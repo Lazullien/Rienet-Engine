@@ -1,0 +1,8 @@
+Rienet-Engine
+A small game framework for my project Atelo made using Monogame, work in progress (Now updated for TACTICAL BAND)
+
+Structure
+In a "WorldBody" contains many different "Scenes", inside each scene contains "GameObjects", which can have "PhysicsBodies" to interact with everything else in the scene through collisions and velocity. The world is organized through quadtrees containing bodies and entities. Graphics are handled through semi auto components. I've made semi auto tools for importing scenes and tilesets as well. For each project you would have to define more specific importers in the GamePanel class which is essentially the main engine (inherits Game), and script entities' classes yourself
+
+Tips:
+Don't have too much overlapping graphics drawn, it creates a lot of lag, I cannot control this without risking performance drawing normally. The system has no layer-based culling, sorry.
